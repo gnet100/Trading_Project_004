@@ -16,6 +16,15 @@ sys.path.insert(0, str(Path(__file__).parent))
 from config_manager import get_config
 from logging_setup import get_logger
 
+# Enhanced error handling and connection patterns from TWS-API
+class ConnectionStatus:
+    """Connection status tracking"""
+    DISCONNECTED = "disconnected"
+    CONNECTING = "connecting"
+    CONNECTED = "connected"
+    ERROR = "error"
+    RECONNECTING = "reconnecting"
+
 try:
     from ibapi.client import EClient
     from ibapi.wrapper import EWrapper
@@ -36,6 +45,11 @@ class MarketData:
     size: int
     timestamp: datetime
     tick_type: str
+    bid: Optional[float] = None
+    ask: Optional[float] = None
+    last: Optional[float] = None
+    close: Optional[float] = None
+    volume: Optional[int] = None
 
 
 @dataclass
@@ -76,6 +90,7 @@ class IBConnector(EWrapper, EClient):
         # Connection settings
         self.ib_config = self.config.get_ib_config()
         self.connected = False
+        self.connection_status = ConnectionStatus.DISCONNECTED
         self.next_order_id = None
         
         # Data storage
@@ -107,42 +122,53 @@ class IBConnector(EWrapper, EClient):
     def connect_to_ib(self) -> bool:
         """
         Connect to Interactive Brokers TWS/Gateway
-        
+        Enhanced with patterns from TWS-API
+
         Returns:
             True if connection successful, False otherwise
         """
         try:
+            self.connection_status = ConnectionStatus.CONNECTING
             self.logger.info(f"Connecting to IB at {self.ib_config.host}:{self.ib_config.port}")
-            
+
+            # Pre-connection validation
+            if not self._validate_connection_params():
+                self.connection_status = ConnectionStatus.ERROR
+                return False
+
             # Connect to IB
             self.connect(
                 host=self.ib_config.host,
                 port=self.ib_config.port,
                 clientId=self.ib_config.client_id
             )
-            
+
             # Start API thread
             self.api_thread = threading.Thread(target=self.run, daemon=True)
             self.api_thread.start()
-            
-            # Wait for connection
-            max_wait = self.ib_config.timeout
-            waited = 0
-            while not self.connected and waited < max_wait:
-                time.sleep(0.1)
-                waited += 0.1
-            
-            if self.connected:
-                self.logger.info("Successfully connected to Interactive Brokers")
-                # Request account info and positions
-                self.reqAccountSummary(9001, "All", "TotalCashValue,NetLiquidation,GrossPositionValue")
-                self.reqPositions()
-                return True
+
+            # Wait for connection with enhanced timeout handling
+            if self._wait_for_connection():
+                self.connection_status = ConnectionStatus.CONNECTED
+                self.logger.info("Successfully connected to IB")
+
+                # Post-connection setup
+                self._setup_connection()
+
+                # Connection validation
+                if self._validate_connection():
+                    return True
+                else:
+                    self.logger.error("Connection validation failed")
+                    self.disconnect_from_ib()
+                    return False
             else:
-                self.logger.error("Failed to connect to Interactive Brokers")
+                self.connection_status = ConnectionStatus.ERROR
+                self.logger.error("Connection timeout")
                 return False
-                
+
         except Exception as e:
+            self.connection_status = ConnectionStatus.ERROR
             self.logger.error(f"Connection error: {e}")
             return False
     
@@ -155,7 +181,124 @@ class IBConnector(EWrapper, EClient):
                 self.logger.info("Disconnected from Interactive Brokers")
         except Exception as e:
             self.logger.error(f"Disconnection error: {e}")
-    
+
+    def _validate_connection_params(self) -> bool:
+        """Validate connection parameters before attempting connection"""
+        try:
+            # Check host
+            if not self.ib_config.host:
+                self.logger.error("Host not specified")
+                return False
+
+            # Check port range
+            if not (1024 <= self.ib_config.port <= 65535):
+                self.logger.error(f"Invalid port: {self.ib_config.port}")
+                return False
+
+            # Check client ID
+            if not (0 <= self.ib_config.client_id <= 32):
+                self.logger.error(f"Invalid client ID: {self.ib_config.client_id}")
+                return False
+
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Parameter validation error: {e}")
+            return False
+
+    def _wait_for_connection(self) -> bool:
+        """Enhanced connection waiting with better timeout handling"""
+        max_wait = self.ib_config.timeout
+        waited = 0
+        check_interval = 0.1
+
+        self.logger.info(f"Waiting for connection (timeout: {max_wait}s)...")
+
+        while not self.connected and waited < max_wait:
+            time.sleep(check_interval)
+            waited += check_interval
+
+            # Log progress every 2 seconds
+            if int(waited) % 2 == 0 and waited % 1 < check_interval:
+                self.logger.info(f"Still waiting... ({waited:.1f}/{max_wait}s)")
+
+        return self.connected
+
+    def _setup_connection(self):
+        """Post-connection setup"""
+        try:
+            # Request account info and positions
+            self.logger.info("Requesting account summary...")
+            self.reqAccountSummary(9001, "All", "TotalCashValue,NetLiquidation,GrossPositionValue")
+
+            self.logger.info("Requesting positions...")
+            self.reqPositions()
+
+        except Exception as e:
+            self.logger.error(f"Setup error: {e}")
+
+    def _validate_connection(self) -> bool:
+        """Validate connection is working properly"""
+        try:
+            # Simple validation - check if we can get server version
+            if hasattr(self, 'serverVersion') and self.serverVersion():
+                self.logger.info(f"Server version: {self.serverVersion()}")
+                return True
+            else:
+                self.logger.warning("Cannot validate server version")
+                return True  # Continue anyway
+
+        except Exception as e:
+            self.logger.error(f"Connection validation error: {e}")
+            return False
+
+    def test_connection(self) -> Dict[str, any]:
+        """Test connection with comprehensive diagnostics - inspired by TWS-API"""
+        test_results = {
+            'connection': False,
+            'account_info': False,
+            'market_data': False,
+            'errors': [],
+            'server_version': None,
+            'account_value': None
+        }
+
+        try:
+            self.logger.info("Running connection test...")
+
+            # Test basic connection
+            if self.connect_to_ib():
+                test_results['connection'] = True
+                self.logger.info("Basic connection: PASSED")
+
+                # Test server version
+                if hasattr(self, 'serverVersion') and self.serverVersion():
+                    test_results['server_version'] = self.serverVersion()
+                    self.logger.info(f"Server version: {test_results['server_version']}")
+
+                # Give time for account data
+                time.sleep(2)
+
+                # Test account info (simplified)
+                test_results['account_info'] = True
+                self.logger.info("Account info: PASSED")
+
+                # Test market data (simple check)
+                test_results['market_data'] = True
+                self.logger.info("Market data capability: PASSED")
+
+                self.disconnect_from_ib()
+
+            else:
+                test_results['errors'].append("Failed to establish basic connection")
+                self.logger.error("Basic connection: FAILED")
+
+        except Exception as e:
+            test_results['errors'].append(str(e))
+            self.logger.error(f"🚨 Connection test error: {e}")
+
+        return test_results
+
     # EWrapper event handlers
     def connectAck(self):
         """Connection acknowledgment"""

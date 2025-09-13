@@ -400,10 +400,25 @@ class AutoProjectUpdater:
             for i, activity in enumerate(self.session_activities, 1):
                 self.safe_print(f"   {i}. {activity}")
 
+        # Auto GitHub backup if GitHubBackupManager available
+        if GitHubBackupManager:
+            try:
+                self.safe_print("\n🔄 יוצר גיבוי אוטומטי לגיטהאב...")
+                backup_manager = GitHubBackupManager()
+                result = backup_manager.create_automated_backup(
+                    f"Auto backup - {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+                )
+                if result.get("success"):
+                    self.safe_print("   ✅ גיבוי לגיטהאב הושלם בהצלחה")
+                else:
+                    self.safe_print(f"   ⚠️ גיבוי נכשל: {result.get('error', 'Unknown error')}")
+            except Exception as e:
+                self.safe_print(f"   ❌ שגיאה בגיבוי: {str(e)}")
+
         self.safe_print("\n💡 המלצות:")
         self.safe_print("   ✅ הפעל project_status_reviewer.py לעדכון מצב")
         self.safe_print("   ✅ בדוק שכל השינויים נכונים")
-        self.safe_print("   ✅ שקול ליצור commit עם השינויים")
+        self.safe_print("   ✅ גיבוי אוטומטי לגיטהאב פועל")
 
         self.safe_print(
             f"\n📅 עדכון אוטומטי הושלם: {datetime.now().strftime('%d/%m/%Y %H:%M')}"

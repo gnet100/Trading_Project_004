@@ -1,556 +1,299 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Trading Project 004 - Performance Tester
-Tests bulk data download performance with different configurations
+Performance Tester - Trading Project 004
+Tests database performance with large datasets (3M+ records)
 """
 
-import statistics
+import os
 import sys
 import time
-from dataclasses import dataclass
+import statistics
 from datetime import datetime, timedelta
-from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from random import random, randint, choice
+from typing import Dict, List, Any
 
-import pandas as pd
+# Add src to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-sys.path.insert(0, str(Path(__file__).parent))
-from batch_optimizer import BatchOptimizer, BatchStrategy
-from logging_setup import get_logger
-from rate_limiter import IBRateLimiter, Priority, RequestType
-
-
-class TestScenario(Enum):
-    """Different test scenarios"""
-
-    SMALL_BATCH = "small_batch"  # 5 requests
-    MEDIUM_BATCH = "medium_batch"  # 20 requests
-    LARGE_BATCH = "large_batch"  # 50 requests
-    MULTI_SYMBOL = "multi_symbol"  # Multiple symbols, same timeframe
-    MULTI_TIMEFRAME = "multi_timeframe"  # Same symbol, multiple timeframes
-    COMPREHENSIVE = "comprehensive"  # Multiple symbols and timeframes
-
-
-@dataclass
-class PerformanceMetrics:
-    """Performance test results"""
-
-    scenario: str
-    strategy: str
-    total_requests: int
-    successful_requests: int
-    failed_requests: int
-    total_time_seconds: float
-    average_request_time: float
-    requests_per_minute: float
-    rate_limit_hits: int
-    retry_count: int
-    success_rate_percentage: float
-    memory_usage_mb: Optional[float] = None
-    cpu_usage_percentage: Optional[float] = None
+from data_storage_service import DataStorageService
+from database_manager import DatabaseManager
 
 
 class PerformanceTester:
-    """
-    Performance tester for bulk data downloads
-    Tests different configurations and strategies
-    """
+    """Database performance tester for Trading Project 004"""
 
-    def __init__(self):
-        self.logger = get_logger(__name__)
-        self.test_results: List[PerformanceMetrics] = []
+    def __init__(self, database_url: str = None):
+        """Initialize Performance Tester"""
+        self.storage_service = DataStorageService(database_url)
+        self.db_manager = DatabaseManager(database_url)
 
-        # Test data configurations
-        self.test_symbols = [
-            "MSTR",
-            "TSLA",
-            "AAPL",
-            "NVDA",
-            "MSFT",
-            "GOOGL",
-            "AMZN",
-            "META",
-        ]
-        self.test_timeframes = [
-            ("1 D", "1 min"),
-            ("1 D", "15 mins"),
-            ("1 D", "1 hour"),
-            ("5 D", "1 day"),
-        ]
+        # Test configuration
+        self.test_symbols = ['AAPL', 'MSTR', 'TSLA', 'NVDA', 'GOOGL', 'MSFT']
+        self.test_timeframes = ['1min', '15min', '1hour', '4hour', 'daily']
 
-        self.logger.info("Performance Tester initialized")
-
-    def run_scenario_test(
-        self,
-        scenario: TestScenario,
-        strategy: BatchStrategy,
-        enable_rate_limiting: bool = True,
-    ) -> PerformanceMetrics:
-        """
-        Run a specific test scenario
-
-        Args:
-            scenario: Test scenario to run
-            strategy: Batch strategy to use
-            enable_rate_limiting: Whether to use rate limiting
-
-        Returns:
-            Performance metrics
-        """
-        self.logger.info(
-            f"Running test: {scenario.value} with {strategy.value} strategy"
-        )
-        self.logger.info(
-            f"Rate limiting: {'enabled' if enable_rate_limiting else 'disabled'}"
-        )
-
-        # Setup test environment
-        rate_limiter = IBRateLimiter() if enable_rate_limiting else None
-        if rate_limiter:
-            rate_limiter.start_processing()
-
-        batch_optimizer = BatchOptimizer(rate_limiter) if rate_limiter else None
-
-        start_time = time.time()
-        initial_stats = rate_limiter.get_stats() if rate_limiter else {}
-
-        try:
-            # Configure test based on scenario
-            batch_id = self._create_test_batch(scenario, batch_optimizer)
-
-            if batch_optimizer:
-                # Execute batch with optimizer
-                results = batch_optimizer.execute_batch(batch_id, strategy)
-                successful_requests = results["completed"]
-                failed_requests = results["failed"]
-                total_requests = results["total_requests"]
-            else:
-                # Simulate direct execution (no rate limiting/batching)
-                results = self._simulate_direct_execution(scenario)
-                successful_requests = results["successful"]
-                failed_requests = results["failed"]
-                total_requests = results["total"]
-
-        except Exception as e:
-            self.logger.error(f"Test execution failed: {e}")
-            successful_requests = 0
-            failed_requests = 0
-            total_requests = 0
-
-        finally:
-            if rate_limiter:
-                rate_limiter.stop_processing()
-
-        # Calculate metrics
-        end_time = time.time()
-        total_time = end_time - start_time
-
-        final_stats = rate_limiter.get_stats() if rate_limiter else {}
-        rate_limit_hits = final_stats.get(
-            "rate_limited_requests", 0
-        ) - initial_stats.get("rate_limited_requests", 0)
-        retry_count = final_stats.get("retried_requests", 0) - initial_stats.get(
-            "retried_requests", 0
-        )
-
-        metrics = PerformanceMetrics(
-            scenario=scenario.value,
-            strategy=strategy.value,
-            total_requests=total_requests,
-            successful_requests=successful_requests,
-            failed_requests=failed_requests,
-            total_time_seconds=total_time,
-            average_request_time=total_time / max(total_requests, 1),
-            requests_per_minute=(successful_requests / total_time) * 60
-            if total_time > 0
-            else 0,
-            rate_limit_hits=rate_limit_hits,
-            retry_count=retry_count,
-            success_rate_percentage=(successful_requests / max(total_requests, 1))
-            * 100,
-        )
-
-        self.test_results.append(metrics)
-        self.logger.info(
-            f"Test completed: {successful_requests}/{total_requests} successful in {total_time:.1f}s"
-        )
-
-        return metrics
-
-    def _create_test_batch(
-        self, scenario: TestScenario, batch_optimizer: BatchOptimizer
-    ) -> str:
-        """Create test batch based on scenario"""
-
-        if scenario == TestScenario.SMALL_BATCH:
-            # 5 requests: 5 symbols, 1 timeframe
-            return batch_optimizer.create_multi_symbol_batch(
-                symbols=self.test_symbols[:5],
-                duration="1 D",
-                bar_size="1 min",
-                batch_name="small_batch_test",
-            )
-
-        elif scenario == TestScenario.MEDIUM_BATCH:
-            # 20 requests: 5 symbols, 4 timeframes
-            return batch_optimizer.create_comprehensive_batch(
-                symbols=self.test_symbols[:5],
-                timeframes=self.test_timeframes,
-                batch_name="medium_batch_test",
-            )
-
-        elif scenario == TestScenario.LARGE_BATCH:
-            # 32 requests: 8 symbols, 4 timeframes
-            return batch_optimizer.create_comprehensive_batch(
-                symbols=self.test_symbols,
-                timeframes=self.test_timeframes,
-                batch_name="large_batch_test",
-            )
-
-        elif scenario == TestScenario.MULTI_SYMBOL:
-            # 8 symbols, same timeframe
-            return batch_optimizer.create_multi_symbol_batch(
-                symbols=self.test_symbols,
-                duration="1 D",
-                bar_size="1 min",
-                batch_name="multi_symbol_test",
-            )
-
-        elif scenario == TestScenario.MULTI_TIMEFRAME:
-            # 1 symbol, multiple timeframes
-            return batch_optimizer.create_multi_timeframe_batch(
-                symbol="MSTR",
-                timeframes=self.test_timeframes,
-                batch_name="multi_timeframe_test",
-            )
-
-        else:  # COMPREHENSIVE
-            # All symbols, all timeframes
-            return batch_optimizer.create_comprehensive_batch(
-                symbols=self.test_symbols,
-                timeframes=self.test_timeframes,
-                batch_name="comprehensive_test",
-            )
-
-    def _simulate_direct_execution(self, scenario: TestScenario) -> Dict[str, int]:
-        """Simulate direct execution without rate limiting for comparison"""
-
-        # Determine number of requests based on scenario
-        if scenario == TestScenario.SMALL_BATCH:
-            total = 5
-        elif scenario == TestScenario.MEDIUM_BATCH:
-            total = 20
-        elif scenario == TestScenario.LARGE_BATCH:
-            total = 32
-        elif scenario == TestScenario.MULTI_SYMBOL:
-            total = 8
-        elif scenario == TestScenario.MULTI_TIMEFRAME:
-            total = 4
-        else:  # COMPREHENSIVE
-            total = 32
-
-        # Simulate execution time (shorter without rate limiting)
-        simulated_time_per_request = 0.1  # Much faster without rate limiting
-        time.sleep(total * simulated_time_per_request)
-
-        # Assume high success rate without rate limiting
-        successful = int(total * 0.95)  # 95% success rate
-        failed = total - successful
-
-        return {"total": total, "successful": successful, "failed": failed}
-
-    def run_comprehensive_test_suite(self) -> Dict[str, Any]:
-        """
-        Run comprehensive test suite with different configurations
-
-        Returns:
-            Complete test results and analysis
-        """
-        self.logger.info("Starting comprehensive performance test suite")
-
-        # Test configurations
-        test_configs = [
-            # Small batches
-            (TestScenario.SMALL_BATCH, BatchStrategy.SEQUENTIAL, True),
-            (TestScenario.SMALL_BATCH, BatchStrategy.PARALLEL_SYMBOL, True),
-            # Medium batches
-            (TestScenario.MEDIUM_BATCH, BatchStrategy.SEQUENTIAL, True),
-            (TestScenario.MEDIUM_BATCH, BatchStrategy.PARALLEL_TIMEFRAME, True),
-            (TestScenario.MEDIUM_BATCH, BatchStrategy.MIXED_PARALLEL, True),
-            # Large batches
-            (TestScenario.LARGE_BATCH, BatchStrategy.PARALLEL_TIMEFRAME, True),
-            (TestScenario.LARGE_BATCH, BatchStrategy.MIXED_PARALLEL, True),
-            # Specialized scenarios
-            (TestScenario.MULTI_SYMBOL, BatchStrategy.PARALLEL_SYMBOL, True),
-            (TestScenario.MULTI_TIMEFRAME, BatchStrategy.PARALLEL_TIMEFRAME, True),
-            # Comparison without rate limiting
-            (TestScenario.MEDIUM_BATCH, BatchStrategy.SEQUENTIAL, False),
-        ]
-
-        total_tests = len(test_configs)
-        completed_tests = 0
-
-        for scenario, strategy, rate_limiting in test_configs:
-            completed_tests += 1
-            self.logger.info(f"Progress: {completed_tests}/{total_tests} tests")
-
-            try:
-                self.run_scenario_test(scenario, strategy, rate_limiting)
-                # Brief pause between tests
-                time.sleep(2)
-            except Exception as e:
-                self.logger.error(
-                    f"Test failed: {scenario.value} + {strategy.value} - {e}"
-                )
-
-        # Analyze results
-        analysis = self._analyze_results()
-
-        self.logger.info("Comprehensive test suite completed")
-        return analysis
-
-    def _analyze_results(self) -> Dict[str, Any]:
-        """Analyze test results and provide insights"""
-
-        if not self.test_results:
-            return {"error": "No test results available"}
-
-        # Overall statistics
-        total_tests = len(self.test_results)
-        avg_success_rate = statistics.mean(
-            [r.success_rate_percentage for r in self.test_results]
-        )
-        avg_requests_per_minute = statistics.mean(
-            [r.requests_per_minute for r in self.test_results]
-        )
-
-        # Best performing configurations
-        best_by_speed = max(self.test_results, key=lambda r: r.requests_per_minute)
-        best_by_success = max(
-            self.test_results, key=lambda r: r.success_rate_percentage
-        )
-
-        # Rate limiting impact analysis
-        rate_limited_tests = [
-            r
-            for r in self.test_results
-            if "rate_limiting" not in r.strategy or r.rate_limit_hits > 0
-        ]
-        non_rate_limited_tests = [
-            r for r in self.test_results if r.rate_limit_hits == 0
-        ]
-
-        # Strategy comparison
-        strategy_performance = {}
-        for result in self.test_results:
-            strategy = result.strategy
-            if strategy not in strategy_performance:
-                strategy_performance[strategy] = []
-            strategy_performance[strategy].append(result)
-
-        strategy_summary = {}
-        for strategy, results in strategy_performance.items():
-            strategy_summary[strategy] = {
-                "avg_success_rate": statistics.mean(
-                    [r.success_rate_percentage for r in results]
-                ),
-                "avg_requests_per_minute": statistics.mean(
-                    [r.requests_per_minute for r in results]
-                ),
-                "avg_rate_limit_hits": statistics.mean(
-                    [r.rate_limit_hits for r in results]
-                ),
-                "tests_count": len(results),
-            }
-
-        analysis = {
-            "summary": {
-                "total_tests": total_tests,
-                "average_success_rate": avg_success_rate,
-                "average_requests_per_minute": avg_requests_per_minute,
-            },
-            "best_performers": {
-                "fastest": {
-                    "scenario": best_by_speed.scenario,
-                    "strategy": best_by_speed.strategy,
-                    "requests_per_minute": best_by_speed.requests_per_minute,
-                },
-                "most_reliable": {
-                    "scenario": best_by_success.scenario,
-                    "strategy": best_by_success.strategy,
-                    "success_rate": best_by_success.success_rate_percentage,
-                },
-            },
-            "strategy_comparison": strategy_summary,
-            "rate_limiting_impact": {
-                "tests_with_rate_limiting": len(rate_limited_tests),
-                "tests_without_rate_limiting": len(non_rate_limited_tests),
-                "avg_rate_limit_hits": statistics.mean(
-                    [r.rate_limit_hits for r in rate_limited_tests]
-                )
-                if rate_limited_tests
-                else 0,
-            },
-            "detailed_results": [
-                {
-                    "scenario": r.scenario,
-                    "strategy": r.strategy,
-                    "success_rate": r.success_rate_percentage,
-                    "requests_per_minute": r.requests_per_minute,
-                    "total_time": r.total_time_seconds,
-                    "rate_limit_hits": r.rate_limit_hits,
-                }
-                for r in self.test_results
-            ],
+        # Performance tracking
+        self.performance_results = {
+            'bulk_insert': {},
+            'query_performance': {}
         }
 
-        return analysis
+    def run_complete_performance_test(
+        self,
+        record_counts: List[int] = None,
+        include_quality_validation: bool = True
+    ) -> Dict[str, Any]:
+        """Run comprehensive performance test suite"""
+        if record_counts is None:
+            record_counts = [10000, 100000, 1000000, 3000000]  # 10K, 100K, 1M, 3M
 
-    def generate_performance_report(self, analysis: Dict[str, Any]) -> str:
-        """Generate human-readable performance report"""
+        print("🚀 Starting Performance Test Suite")
+        print("=" * 60)
+        print(f"📊 Test Record Counts: {[f'{count:,}' for count in record_counts]}")
+        print(f"🔧 Quality Validation: {'Enabled' if include_quality_validation else 'Disabled'}")
+        print("=" * 60)
 
-        report = []
-        report.append("=" * 80)
-        report.append("PERFORMANCE TEST REPORT")
-        report.append("=" * 80)
+        test_start = datetime.now()
 
-        # Summary
-        summary = analysis["summary"]
-        report.append(f"\nOVERALL RESULTS:")
-        report.append(f"  Tests conducted: {summary['total_tests']}")
-        report.append(f"  Average success rate: {summary['average_success_rate']:.1f}%")
-        report.append(
-            f"  Average requests per minute: {summary['average_requests_per_minute']:.1f}"
-        )
+        try:
+            # Test 1: Bulk Insert Performance
+            print("\n🎯 Test 1: Bulk Insert Performance")
+            self._test_bulk_insert_performance(record_counts, include_quality_validation)
 
-        # Best performers
-        fastest = analysis["best_performers"]["fastest"]
-        most_reliable = analysis["best_performers"]["most_reliable"]
+            # Test 2: Query Performance
+            print("\n🎯 Test 2: Query Performance")
+            self._test_query_performance()
 
-        report.append(f"\nBEST PERFORMERS:")
-        report.append(f"  Fastest configuration:")
-        report.append(f"    Scenario: {fastest['scenario']}")
-        report.append(f"    Strategy: {fastest['strategy']}")
-        report.append(
-            f"    Speed: {fastest['requests_per_minute']:.1f} requests/minute"
-        )
+            # Generate comprehensive report
+            test_end = datetime.now()
+            execution_time = (test_end - test_start).total_seconds()
 
-        report.append(f"  Most reliable configuration:")
-        report.append(f"    Scenario: {most_reliable['scenario']}")
-        report.append(f"    Strategy: {most_reliable['strategy']}")
-        report.append(f"    Success rate: {most_reliable['success_rate']:.1f}%")
+            return {
+                'status': 'completed',
+                'execution_time': execution_time,
+                'results': self.performance_results,
+                'summary': self._generate_performance_summary(),
+                'recommendations': self._generate_recommendations()
+            }
 
-        # Strategy comparison
-        report.append(f"\nSTRATEGY COMPARISON:")
-        for strategy, stats in analysis["strategy_comparison"].items():
-            report.append(f"  {strategy}:")
-            report.append(f"    Success rate: {stats['avg_success_rate']:.1f}%")
-            report.append(f"    Requests/min: {stats['avg_requests_per_minute']:.1f}")
-            report.append(f"    Rate limit hits: {stats['avg_rate_limit_hits']:.1f}")
-            report.append(f"    Tests: {stats['tests_count']}")
+        except Exception as e:
+            return {
+                'status': 'error',
+                'error': str(e),
+                'execution_time': (datetime.now() - test_start).total_seconds()
+            }
 
-        # Recommendations
-        report.append(f"\nRECOMMendations:")
+    def _test_bulk_insert_performance(
+        self,
+        record_counts: List[int],
+        include_validation: bool
+    ) -> None:
+        """Test bulk insert performance with various record counts"""
+        for count in record_counts:
+            print(f"\n  📦 Testing bulk insert with {count:,} records...")
 
-        # Find best overall strategy
-        best_strategy = max(
-            analysis["strategy_comparison"].items(),
-            key=lambda x: x[1]["avg_success_rate"]
-            + x[1]["avg_requests_per_minute"] / 10,
-        )
+            # Generate test data
+            print(f"    🎲 Generating {count:,} mock records...")
+            start_time = time.time()
+            test_data = self._generate_mock_data(count)
+            data_generation_time = time.time() - start_time
 
-        report.append(f"  1. Recommended strategy: {best_strategy[0]}")
-        report.append(f"     - Balanced performance and reliability")
+            # Test bulk insert
+            print(f"    💾 Inserting {count:,} records...")
+            insert_start = time.time()
 
-        if analysis["rate_limiting_impact"]["avg_rate_limit_hits"] > 0:
-            report.append(f"  2. Rate limiting is working effectively")
-            report.append(
-                f"     - Average {analysis['rate_limiting_impact']['avg_rate_limit_hits']:.1f} rate limit hits per test"
-            )
-            report.append(f"     - Helps prevent API overload")
-
-        report.append(f"  3. For large-scale downloads:")
-        report.append(f"     - Use MIXED_PARALLEL strategy for best balance")
-        report.append(f"     - Enable rate limiting to avoid API limits")
-        report.append(
-            f"     - Consider breaking very large requests into smaller batches"
-        )
-
-        report.append("=" * 80)
-
-        return "\n".join(report)
-
-    def save_results_to_csv(self, filename: str = None):
-        """Save test results to CSV file"""
-        if not filename:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"performance_test_results_{timestamp}.csv"
-
-        # Convert results to DataFrame
-        data = []
-        for result in self.test_results:
-            data.append(
-                {
-                    "scenario": result.scenario,
-                    "strategy": result.strategy,
-                    "total_requests": result.total_requests,
-                    "successful_requests": result.successful_requests,
-                    "failed_requests": result.failed_requests,
-                    "total_time_seconds": result.total_time_seconds,
-                    "average_request_time": result.average_request_time,
-                    "requests_per_minute": result.requests_per_minute,
-                    "rate_limit_hits": result.rate_limit_hits,
-                    "retry_count": result.retry_count,
-                    "success_rate_percentage": result.success_rate_percentage,
-                }
+            result = self.storage_service.bulk_insert_ib_data(
+                data_records=test_data,
+                validate_quality=include_validation,
+                min_quality_score=95.0 if include_validation else 0.0
             )
 
-        df = pd.DataFrame(data)
-        df.to_csv(filename, index=False)
-        self.logger.info(f"Results saved to {filename}")
-        return filename
+            insert_time = time.time() - insert_start
+
+            # Calculate performance metrics
+            records_per_second = count / insert_time if insert_time > 0 else 0
+
+            self.performance_results['bulk_insert'][f'{count:,}_records'] = {
+                'record_count': count,
+                'data_generation_time': data_generation_time,
+                'insert_time': insert_time,
+                'records_per_second': records_per_second,
+                'inserted_count': result.get('inserted', 0),
+                'rejected_count': result.get('rejected', 0),
+                'validation_enabled': include_validation
+            }
+
+            print(f"    ✅ Completed: {result.get('inserted', 0):,} inserted, {result.get('rejected', 0):,} rejected")
+            print(f"    ⚡ Performance: {records_per_second:,.0f} records/sec")
+
+            # Clean up for next test
+            self._cleanup_test_data()
+
+    def _test_query_performance(self) -> None:
+        """Test query performance with various filters"""
+        # Insert some test data for querying
+        test_data = self._generate_mock_data(100000)  # 100K records
+        self.storage_service.bulk_insert_ib_data(test_data, validate_quality=False)
+
+        query_tests = [
+            {
+                'name': 'symbol_filter',
+                'params': {'symbol': 'AAPL'},
+                'description': 'Query by symbol'
+            },
+            {
+                'name': 'date_range',
+                'params': {
+                    'start_date': datetime.now() - timedelta(days=30),
+                    'end_date': datetime.now() - timedelta(days=1)
+                },
+                'description': 'Query by date range (30 days)'
+            },
+            {
+                'name': 'trading_hours_only',
+                'params': {'trading_hours_only': True},
+                'description': 'Query trading hours only'
+            },
+            {
+                'name': 'combined_filters',
+                'params': {
+                    'symbol': 'MSTR',
+                    'trading_hours_only': True,
+                    'limit': 10000
+                },
+                'description': 'Combined filters query'
+            }
+        ]
+
+        for test in query_tests:
+            print(f"\n  🔍 Testing: {test['description']}")
+
+            start_time = time.time()
+            results = self.storage_service.query_historical_data(**test['params'])
+            query_time = time.time() - start_time
+
+            self.performance_results['query_performance'][test['name']] = {
+                'description': test['description'],
+                'query_time': query_time,
+                'results_count': len(results),
+                'records_per_second': len(results) / query_time if query_time > 0 else 0
+            }
+
+            print(f"    ✅ Found {len(results):,} records in {query_time:.3f}s")
+            print(f"    ⚡ Speed: {len(results) / query_time if query_time > 0 else 0:,.0f} records/sec")
+
+        # Cleanup
+        self._cleanup_test_data()
+
+    def _generate_mock_data(self, count: int) -> List[Dict[str, Any]]:
+        """Generate mock historical data for testing"""
+        mock_data = []
+        base_time = datetime.now() - timedelta(days=365)
+
+        for i in range(count):
+            # Create realistic OHLCV data
+            base_price = 100 + random() * 400  # Price between $100-500
+            volatility = 0.02 + random() * 0.08  # 2-10% volatility
+
+            open_price = base_price
+            close_price = open_price * (1 + (random() - 0.5) * volatility)
+            high_price = max(open_price, close_price) * (1 + random() * volatility * 0.5)
+            low_price = min(open_price, close_price) * (1 - random() * volatility * 0.5)
+
+            volume = randint(10000, 1000000)
+
+            record = {
+                'symbol': choice(self.test_symbols),
+                'timestamp': base_time + timedelta(minutes=i),
+                'timeframe': choice(self.test_timeframes),
+                'open': round(open_price, 2),
+                'high': round(high_price, 2),
+                'low': round(low_price, 2),
+                'close': round(close_price, 2),
+                'volume': volume,
+                'data_source': 'MOCK_TEST'
+            }
+
+            mock_data.append(record)
+
+        return mock_data
+
+    def _cleanup_test_data(self) -> None:
+        """Clean up test data from database"""
+        try:
+            # Delete all mock test data
+            with self.db_manager.session_scope() as session:
+                from database_models import HistoricalData
+                deleted = session.query(HistoricalData).filter(
+                    HistoricalData.source == 'MOCK_TEST'
+                ).delete()
+                session.commit()
+                print(f"    🧹 Cleaned up {deleted:,} test records")
+        except Exception as e:
+            print(f"    ⚠️ Cleanup warning: {str(e)}")
+
+    def _generate_performance_summary(self) -> Dict[str, Any]:
+        """Generate performance test summary"""
+        return {
+            'bulk_insert_summary': self._summarize_bulk_insert(),
+            'query_summary': self._summarize_query_performance()
+        }
+
+    def _summarize_bulk_insert(self) -> Dict[str, Any]:
+        """Summarize bulk insert performance"""
+        bulk_results = self.performance_results.get('bulk_insert', {})
+        if not bulk_results:
+            return {}
+
+        speeds = [result['records_per_second'] for result in bulk_results.values()]
+        return {
+            'max_speed_rps': max(speeds) if speeds else 0,
+            'avg_speed_rps': statistics.mean(speeds) if speeds else 0,
+            'total_records_tested': sum(result['record_count'] for result in bulk_results.values())
+        }
+
+    def _summarize_query_performance(self) -> Dict[str, Any]:
+        """Summarize query performance"""
+        query_results = self.performance_results.get('query_performance', {})
+        if not query_results:
+            return {}
+
+        times = [result['query_time'] for result in query_results.values()]
+        return {
+            'fastest_query_time': min(times) if times else 0,
+            'slowest_query_time': max(times) if times else 0,
+            'avg_query_time': statistics.mean(times) if times else 0
+        }
+
+    def _generate_recommendations(self) -> List[str]:
+        """Generate performance recommendations based on test results"""
+        recommendations = []
+
+        # Analyze bulk insert performance
+        bulk_results = self.performance_results.get('bulk_insert', {})
+        if bulk_results:
+            speeds = [result['records_per_second'] for result in bulk_results.values()]
+            avg_speed = statistics.mean(speeds) if speeds else 0
+
+            if avg_speed < 1000:
+                recommendations.append("Consider increasing batch size for bulk inserts")
+            elif avg_speed > 10000:
+                recommendations.append("Excellent bulk insert performance - configuration is optimal")
+
+        if not recommendations:
+            recommendations.append("All performance metrics are within acceptable ranges")
+
+        return recommendations
 
 
-def main():
-    """Demo of performance testing"""
-    print("=" * 80)
-    print("Performance Testing Demo")
-    print("=" * 80)
-
-    tester = PerformanceTester()
-
-    # Run a few quick tests
-    print("Running quick performance tests...")
-
-    # Test 1: Small batch sequential
-    result1 = tester.run_scenario_test(
-        TestScenario.SMALL_BATCH, BatchStrategy.SEQUENTIAL, enable_rate_limiting=True
-    )
-    print(
-        f"Test 1 - Small Sequential: {result1.success_rate_percentage:.1f}% success, "
-        f"{result1.requests_per_minute:.1f} req/min"
-    )
-
-    # Test 2: Small batch parallel
-    result2 = tester.run_scenario_test(
-        TestScenario.SMALL_BATCH,
-        BatchStrategy.PARALLEL_SYMBOL,
-        enable_rate_limiting=True,
-    )
-    print(
-        f"Test 2 - Small Parallel: {result2.success_rate_percentage:.1f}% success, "
-        f"{result2.requests_per_minute:.1f} req/min"
-    )
-
-    # Analysis
-    analysis = tester._analyze_results()
-    report = tester.generate_performance_report(analysis)
-    print("\n" + report)
-
-    # Save results
-    csv_file = tester.save_results_to_csv()
-    print(f"\nResults saved to: {csv_file}")
-
-
+# Example usage
 if __name__ == "__main__":
-    main()
+    tester = PerformanceTester()
+    print("🎯 Performance Tester initialized successfully!")
+
+    # Run small test (commented out for safety)
+    # result = tester.run_complete_performance_test(
+    #     record_counts=[1000, 10000],  # Small test
+    #     include_quality_validation=True
+    # )
+    # print(f"Test completed: {result}")

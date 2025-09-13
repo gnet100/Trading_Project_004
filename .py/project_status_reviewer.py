@@ -40,6 +40,11 @@ class ProjectStatusReviewer:
 
         self.status_data = {}
 
+        # Additional data for enhanced summary
+        self.project_rules = {}
+        self.technical_status = {}
+        self.architectural_decisions = []
+
     def safe_print(self, text):
         """Print text safely handling encoding issues"""
         try:
@@ -122,6 +127,71 @@ class ProjectStatusReviewer:
         except Exception as e:
             return {"error": f"Failed to parse TASKS.md: {str(e)}"}
 
+    def extract_project_rules(self, rules_content):
+        """Extract key project rules from RULES.md"""
+        rules = {
+            "communication": [],
+            "work_process": []
+        }
+
+        current_section = None
+        for line in rules_content.split('\n'):
+            line = line.strip()
+            if "חוקי תקשורת" in line:
+                current_section = "communication"
+            elif "חוקי עבודה" in line:
+                current_section = "work_process"
+            elif line.startswith(('1.', '2.', '3.', '4.', '5.', '6.')):
+                if current_section:
+                    # Extract rule text, clean it up
+                    rule_text = line[2:].strip()[:120]  # Limit length
+                    rules[current_section].append(rule_text)
+
+        return rules
+
+    def extract_technical_status(self):
+        """Extract current technical status and dependencies"""
+        src_path = self.base_path / "src"
+        python_files = []
+
+        if src_path.exists():
+            python_files = [f.name for f in src_path.glob("*.py")]
+
+        # Check for key technology decisions from various files
+        tech_status = {
+            "python_files": python_files,
+            "database_choice": "SQLite (dev) → PostgreSQL (prod)",
+            "timeframes": ["1min", "15min", "1hour", "4hour", "daily"],
+            "validation_quality": "99.95%+",
+            "environment": "conda: trading_project (Python 3.11.13)"
+        }
+
+        return tech_status
+
+    def extract_architectural_decisions(self, content_dict):
+        """Extract key architectural decisions from documentation"""
+        decisions = []
+
+        # From DATABASE_DESIGN.md
+        if "DATABASE_DESIGN.md" in content_dict:
+            db_content = content_dict["DATABASE_DESIGN.md"]
+            if "SQLite" in db_content and "PostgreSQL" in db_content:
+                decisions.append("Database: SQLite for development, PostgreSQL for production")
+            if "DNA Database" in db_content:
+                decisions.append("DNA Database: Every minute with trading simulation + indicators")
+            if "LONG only" in db_content:
+                decisions.append("Trading Strategy: LONG only, SL=$2.8, TP=$3.2, 50 shares")
+
+        # From PLANNING.md
+        if "PLANNING.md" in content_dict:
+            planning_content = content_dict["PLANNING.md"]
+            if "Interactive Brokers" in planning_content:
+                decisions.append("Data Source: Interactive Brokers API with enterprise validation")
+            if "5 timeframes" in planning_content.lower():
+                decisions.append("Multi-timeframe: 5 timeframes for comprehensive analysis")
+
+        return decisions
+
     def parse_session_archive(self, content):
         """Parse SESSION_ARCHIVE.md for latest session info"""
         try:
@@ -166,6 +236,13 @@ class ProjectStatusReviewer:
 
         self.safe_print("\n📊 Analyzing project status...")
 
+        # Extract enhanced information
+        if "RULES.md" in self.status_data:
+            self.project_rules = self.extract_project_rules(self.status_data["RULES.md"])
+
+        self.technical_status = self.extract_technical_status()
+        self.architectural_decisions = self.extract_architectural_decisions(self.status_data)
+
         # Parse specific files
         current_status = self.parse_current_status(
             self.status_data.get("CURRENT_STATUS.md", "")
@@ -178,11 +255,19 @@ class ProjectStatusReviewer:
         return current_status, task_status, session_info
 
     def generate_summary(self, current_status, task_status, session_info):
-        """Generate final summary"""
+        """Generate final summary with RULES enforcement reminder"""
         summary = []
         summary.append("=" * 60)
         summary.append("🎯 TRADING PROJECT 004 - STATUS SUMMARY")
         summary.append("=" * 60)
+        summary.append("")
+
+        # Add RULES enforcement reminder at the top
+        summary.append("⚠️ IMPORTANT - RULES ENFORCEMENT:")
+        summary.append("   📋 RULES.md has been read - MUST follow communication and work rules")
+        summary.append("   🔹 Communication: Short, direct, factual responses")
+        summary.append("   🔹 Work Process: Plan before action, request approval, no unsolicited code")
+        summary.append("   🔹 Resource Saving: Use efficient tools, batch operations")
         summary.append("")
 
         # Session info
@@ -228,8 +313,54 @@ class ProjectStatusReviewer:
         summary.append(f"   {current_status.get('next_actions', 'Not specified')}")
         summary.append("")
 
+        # Project Rules (NEW)
+        summary.append("📋 PROJECT RULES:")
+        summary.append("   📞 Communication Rules:")
+        for rule in self.project_rules.get("communication", [])[:3]:  # Limit to top 3
+            summary.append(f"     • {rule}")
+        summary.append("   💼 Work Process Rules:")
+        for rule in self.project_rules.get("work_process", [])[:3]:  # Limit to top 3
+            summary.append(f"     • {rule}")
+        summary.append("")
+
+        # Technical Status (NEW)
+        summary.append("🔧 TECHNICAL STATUS:")
+        summary.append(f"   Environment: {self.technical_status.get('environment', 'Unknown')}")
+        summary.append(f"   Database: {self.technical_status.get('database_choice', 'Not specified')}")
+        summary.append(f"   Validation: {self.technical_status.get('validation_quality', 'Unknown')}")
+        summary.append(f"   Python Files: {len(self.technical_status.get('python_files', []))} files in src/")
+        if self.technical_status.get('python_files'):
+            top_files = self.technical_status['python_files'][:5]  # Show first 5
+            summary.append(f"     Key files: {', '.join(top_files)}")
+        summary.append("")
+
+        # Architectural Decisions (NEW)
+        if self.architectural_decisions:
+            summary.append("🏗️ KEY ARCHITECTURAL DECISIONS:")
+            for decision in self.architectural_decisions[:4]:  # Limit to top 4
+                summary.append(f"   • {decision}")
+            summary.append("")
+
+        # CLAUDE.md Integration Note (NEW)
+        summary.append("📖 COMPLETE PROJECT CONTEXT:")
+        summary.append("   ⚡ This summary provides quick status overview")
+        summary.append("   📚 For full context, CLAUDE.md contains complete reading guidelines:")
+        summary.append("     • All project documentation (RULES, PRD, PLANNING, etc.)")
+        summary.append("     • Database design specifications (DATABASE_DESIGN.md)")
+        summary.append("     • Session history and accomplishments")
+        summary.append("   💡 Use this summary as starting point, refer to CLAUDE.md for details")
+        summary.append("")
+
         summary.append("=" * 60)
         summary.append(f"📅 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        summary.append("=" * 60)
+        summary.append("")
+
+        # Add final RULES reminder
+        summary.append("🚨 CLAUDE CODE SESSION START REQUIREMENTS:")
+        summary.append("   1. APPLY RULES.md immediately - no exceptions")
+        summary.append("   2. Communicate: Short, direct, seek approval")
+        summary.append("   3. Work: Plan first, execute only after approval")
         summary.append("=" * 60)
 
         return "\n".join(summary)
