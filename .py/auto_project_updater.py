@@ -13,8 +13,12 @@ This script automatically:
 4. Archives old session to SESSION_ARCHIVE.md
 5. Updates CLAUDE.md with new session info
 6. Updates file versions and timestamps
+7. PERFORMS FULL PROJECT BACKUP TO GITHUB (Git commit + push + API backup)
 
-No user interaction required - fully automated.
+IMPORTANT: This script ensures complete project backup and recovery capability.
+All changes are automatically committed to Git and pushed to GitHub repository.
+
+No user interaction required - fully automated with complete backup.
 """
 
 import re
@@ -353,33 +357,97 @@ class AutoProjectUpdater:
         return False
 
     def backup_to_github(self) -> bool:
-        """Backup project files to GitHub after updates"""
-        if not GitHubBackupManager:
-            self.safe_print("ℹ️  GitHub Backup Manager לא זמין")
+        """
+        Backup complete project to GitHub after updates
+
+        Performs FULL project backup including:
+        1. Git commit of all changes
+        2. Git push to GitHub repository
+        3. Additional .md files backup via API
+
+        This ensures complete project recovery capability.
+        """
+        self.safe_print("🔄 גיבוי מלא של הפרויקט ל-GitHub...")
+
+        # Step 1: Full Git backup (primary backup method)
+        git_success = self._perform_git_backup()
+
+        # Step 2: Additional .md files backup via API (secondary backup)
+        api_success = self._perform_api_backup()
+
+        if git_success:
+            self.safe_print("  ✅ גיבוי Git מלא הושלם בהצלחה")
+            self.changes_made.append("בוצע גיבוי Git מלא ל-GitHub")
+
+        if api_success:
+            self.safe_print("  ✅ גיבוי API נוסף הושלם בהצלחה")
+
+        return git_success  # Primary success indicator
+
+    def _perform_git_backup(self) -> bool:
+        """Perform full Git commit and push"""
+        import subprocess
+        import os
+
+        try:
+            os.chdir(self.base_path)
+
+            # Check if there are any changes to commit
+            result = subprocess.run(['git', 'status', '--porcelain'],
+                                  capture_output=True, text=True, check=True)
+
+            if not result.stdout.strip():
+                self.safe_print("  ℹ️  אין שינויים לגיבוי Git")
+                return True
+
+            # Add all changes
+            subprocess.run(['git', 'add', '.'], check=True)
+
+            # Create commit message
+            now = datetime.now().strftime("%d/%m/%Y %H:%M")
+            commit_msg = f"""Automatic project update - {now}
+
+Auto-updated by project_updater.py:
+- Session activities detected and documented
+- Task progress updated
+- Documentation files synchronized
+- Complete project backup maintained
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"""
+
+            # Commit changes
+            subprocess.run(['git', 'commit', '-m', commit_msg], check=True)
+
+            # Push to GitHub
+            subprocess.run(['git', 'push'], check=True)
+
             return True
 
-        self.safe_print("🔄 גיבוי קבצים מעודכנים ל-GitHub...")
+        except subprocess.CalledProcessError as e:
+            self.safe_print(f"  ⚠️  שגיאה בגיבוי Git: {e}")
+            return False
+        except Exception as e:
+            self.safe_print(f"  ❌ שגיאה בלתי צפויה בגיבוי Git: {e}")
+            return False
+
+    def _perform_api_backup(self) -> bool:
+        """Perform additional API backup for .md files"""
+        if not GitHubBackupManager:
+            return True  # Not critical if unavailable
 
         try:
             backup_manager = GitHubBackupManager()
 
             if not backup_manager.github_token:
-                self.safe_print("⚠️  GitHub token לא נמצא - גיבוי מדולג")
-                return True
+                return True  # Skip if no token
 
-            # Backup only updated .md files for efficiency
-            md_backup_success = backup_manager.backup_md_files()
-
-            if md_backup_success:
-                self.safe_print("  ✅ גיבוי קבצי תיעוד הושלם בהצלחה")
-                self.changes_made.append("בוצע גיבוי אוטומטי ל-GitHub")
-                return True
-            else:
-                self.safe_print("  ⚠️  גיבוי הושלם עם שגיאות")
-                return False
+            # Backup .md files via API as additional safety
+            return backup_manager.backup_md_files()
 
         except Exception as e:
-            self.safe_print(f"❌ שגיאה בגיבוי GitHub: {e}")
+            self.safe_print(f"  ⚠️  שגיאה בגיבוי API: {e}")
             return False
 
     def generate_final_report(self):
@@ -450,7 +518,7 @@ def main():
             ("עדכון סטטיסטיקות משימות", updater.update_task_statistics),
             ("עדכון מצב נוכחי", updater.update_current_status_auto),
             ("יצירת וארכוב סיכום סשן", updater.create_auto_session_summary),
-            ("גיבוי אוטומטי ל-GitHub", updater.backup_to_github),
+            ("גיבוי מלא של הפרויקט ל-GitHub", updater.backup_to_github),
         ]
 
         for step_name, step_func in steps:
