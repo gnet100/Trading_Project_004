@@ -1,0 +1,175 @@
+# Trading Project 004 - Main Configuration File
+# This file contains all project configuration parameters
+
+# Application Settings
+application:
+  name: "Trading Project 004"
+  version: "1.0.0"
+  environment: "development"  # development, testing, production
+  debug: true
+
+# Interactive Brokers Configuration
+interactive_brokers:
+  # Connection parameters
+  host: "127.0.0.1"
+  port: 7496  # TWS Live: 7496 (Live Trading)
+  client_id: 1
+  timeout: 10
+  
+  # Account settings
+  account_id: "U3050259"  # Live account ID
+  paper_trading: false     # Live trading enabled
+  
+  # Data settings
+  market_data_type: 1  # 1=Live, 2=Frozen, 3=Delayed, 4=Delayed-Frozen
+  
+  # Connection retry settings
+  max_retries: 3
+  retry_delay: 5  # seconds
+
+# Database Configuration
+database:
+  # Primary database type: sqlite or postgresql
+  primary: "sqlite"
+  
+  # SQLite configuration (default for development)
+  sqlite:
+    path: "database/trading_data.db"
+    backup_path: "backups/database/"
+    journal_mode: "WAL"  # Write-Ahead Logging for better performance
+    synchronous: "NORMAL"
+    cache_size: 10000
+    temp_store: "MEMORY"
+    
+  # PostgreSQL configuration (for production)
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "trading_db"
+    username: ""  # Will be set via environment variable
+    password: ""  # Will be set via environment variable
+    sslmode: "prefer"
+    connect_timeout: 10
+    command_timeout: 60
+    application_name: "trading_project_004"
+    
+  # Connection pooling settings
+  connection_pool:
+    pool_size: 5
+    max_overflow: 10
+    pool_timeout: 30
+    pool_recycle: 3600  # Recycle connections every hour
+    pool_pre_ping: true  # Validate connections before use
+    
+  # Query settings
+  query:
+    echo: false  # Set to true to log all SQL queries
+    echo_pool: false  # Set to true to log connection pool events
+    max_identifier_length: 63  # PostgreSQL limit
+
+# Logging Configuration
+logging:
+  # Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log file settings
+  file:
+    enabled: true
+    path: "logs/trading_project.log"
+    max_size: "10MB"
+    backup_count: 5
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    
+  # Console logging
+  console:
+    enabled: true
+    level: "INFO"
+    format: "%(asctime)s - %(levelname)s - %(message)s"
+    
+  # Module-specific logging levels
+  modules:
+    ibapi: "WARNING"
+    matplotlib: "WARNING"
+    urllib3: "WARNING"
+
+# Data Processing Configuration
+data_processing:
+  # Batch sizes for processing
+  batch_size: 1000
+  
+  # Data validation settings
+  validation:
+    price_min: 0.01
+    price_max: 100000.00
+    volume_min: 0
+    volume_max: 1000000000
+    
+  # Data cleaning settings
+  cleaning:
+    remove_outliers: true
+    outlier_method: "iqr"  # iqr, zscore, isolation_forest
+    fill_missing: true
+    missing_method: "forward_fill"  # forward_fill, backward_fill, interpolate
+
+# Risk Management Configuration
+risk_management:
+  # Position sizing
+  max_position_size: 0.05  # 5% of portfolio
+  max_total_exposure: 1.0   # 100% of portfolio
+  
+  # Stop loss settings
+  default_stop_loss: 0.02   # 2%
+  max_stop_loss: 0.10      # 10%
+  
+  # Daily limits
+  max_daily_trades: 50
+  max_daily_loss: 0.05     # 5% of portfolio
+
+# Technical Analysis Configuration
+technical_analysis:
+  # Default indicator parameters
+  indicators:
+    sma_periods: [10, 20, 50, 200]
+    ema_periods: [12, 26, 50]
+    rsi_period: 14
+    macd_fast: 12
+    macd_slow: 26
+    macd_signal: 9
+    bollinger_period: 20
+    bollinger_std: 2
+    
+  # Chart settings
+  charts:
+    default_timeframe: "1D"
+    lookback_days: 252  # 1 year of trading days
+
+# Backtesting Configuration
+backtesting:
+  # Default parameters
+  initial_capital: 100000
+  commission: 0.001  # 0.1% per trade
+  slippage: 0.0005   # 0.05% slippage
+  
+  # Performance metrics
+  benchmark: "SPY"
+  risk_free_rate: 0.02  # 2% annual
+
+# API Configuration
+api:
+  rate_limits:
+    ib_api: 50  # requests per second
+    yahoo_finance: 2000  # requests per hour
+    
+  timeouts:
+    default: 30  # seconds
+    data_download: 300  # 5 minutes
+
+# File Paths
+paths:
+  data:
+    raw: "data/raw/"
+    processed: "data/processed/"
+    cache: "data/cache/"
+  logs: "logs/"
+  backups: "backups/"
+  exports: "data/exports/"
