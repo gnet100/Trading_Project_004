@@ -59,23 +59,29 @@
   - Error Handler & Retry Logic
   - Data Validator
 
-#### Data Storage Service  
-- **תפקיד:** ניהול מאגר נתונים
+#### Data Storage Service
+- **תפקיד:** ניהול מאגר נתונים - "DNA Database" למחקר סטטיסטי
 - **רכיבים:**
-  - Database Manager (SQLite/PostgreSQL)
-  - Data Models & Schema
-  - Indexing Strategy
-  - Backup & Recovery
-  - Data Compression
+  - Database Manager (SQLite פיתוח / PostgreSQL ייצור)
+  - Historical Data Models (OHLCV + Metadata)
+  - Trading Simulation Schema (Entry/Exit/P&L)
+  - Technical Indicators Storage (Dynamic Columns)
+  - Indexing Strategy (Symbol, DateTime, Quality)
+  - Data Quality Control (99.95%+ validation)
+  - Backup & Recovery (Daily/Weekly)
+  - Performance Optimization (3M+ records)
 
 #### Data Pipeline
-- **תפקיד:** עיבוד זרם נתונים
+- **תפקיד:** עיבוד זרם נתונים למחקר סטטיסטי
 - **רכיבים:**
-  - Data Ingestion
-  - Data Cleansing
-  - Data Transformation
-  - Quality Assurance
-  - Real-time Processing
+  - Data Ingestion (IB API → Raw Storage)
+  - Data Cleansing (Enterprise Validation 99.95%+)
+  - Trading Hours Classification (Warmup/Trading/After-Market)
+  - Trading Simulation Engine (LONG Entry/Exit Logic)
+  - Technical Indicators Calculator (RSI, MACD, Bollinger, etc.)
+  - P&L Calculator (Entry/Exit Price × 50 shares)
+  - Quality Assurance (Missing Minutes Detection)
+  - Real-time Processing (Future: Live Data Integration)
 
 ### 3. מודול ניתוח (Analysis Module)
 
@@ -403,6 +409,6 @@ IB Account: Live or Paper trading account
 
 ---
 
-**נוצר:** 11/09/2025  
-**עודכן אחרון:** 11/09/2025  
+**נוצר:** 11/09/2025
+**עודכן אחרון:** 11/09/2025
 **גרסה:** 1.0
