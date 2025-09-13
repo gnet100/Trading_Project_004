@@ -50,14 +50,16 @@
 
 ### 2. מודול נתונים (Data Module)
 
-#### IB Connection Service
-- **תפקיד:** ממשק לאינטראקטיב ברוקר
+#### IB Connection Service ✅ Enhanced (14/09/2025)
+- **תפקיד:** ממשק אמין ומתקדם לאינטראקטיב ברוקר
 - **רכיבים:**
-  - TWS API Client
-  - Rate Limiting Manager
-  - Connection Monitor
-  - Error Handler & Retry Logic
-  - Data Validator
+  - TWS API Client עם ConnectionStatus management ✅
+  - Rate Limiting Manager ✅
+  - Enhanced Connection Monitor עם timeout handling ✅
+  - Advanced Error Handler & Recovery Patterns ✅
+  - Multi-layer Data Validator ✅
+  - Connection Testing Framework (ib_connection_tester.py) ✅
+  - Windows Console Compatibility (Unicode fixes) ✅
 
 #### Data Storage Service
 - **תפקיד:** ניהול מאגר נתונים - "DNA Database" למחקר סטטיסטי
@@ -410,5 +412,5 @@ IB Account: Live or Paper trading account
 ---
 
 **נוצר:** 11/09/2025
-**עודכן אחרון:** 11/09/2025
-**גרסה:** 1.0
+**עודכן אחרון:** 14/09/2025
+**גרסה:** 1.1 (IB Connection Enhancement)
