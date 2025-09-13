@@ -10,7 +10,10 @@
       "Read(//c/Users/Golan/Claude-Code/Trading Project/TWS-API/**)",
       "Bash(\"C:\\Users\\Golan\\miniconda3\\envs\\trading_project\\python.exe\" \"src\\ib_connection_tester.py\" --quick)",
       "Bash(\"C:\\Users\\Golan\\miniconda3\\envs\\trading_project\\python.exe\" \"src\\ib_connection_tester.py\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
