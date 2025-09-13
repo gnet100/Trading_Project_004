@@ -33,14 +33,22 @@
 - **Mark completed tasks immediately**
 - **Update CURRENT_STATUS.md when significant changes occur**
 
-**🗃️ בעבודה על מאגר נתונים (Milestone 3+):**
+**🗃️ בעבודה על מאגר נתונים (Milestone 3.2+ IMPLEMENTED):**
 - **קרא DATABASE_DESIGN.md תמיד** - מכיל schema מפורט, פרמטרי מחקר וארכיטקטורה
 - **זכור: DNA Database = כל דקה עם סימולציית עסקה + אינדיקטורים**
 - **פרמטרים קבועים: LONG only, 50 shares, SL=$2.8, TP=$3.2**
 - **תזמון: 09:30-09:45 Warmup, 09:45-16:00 Trading, 16:00-20:00 After-Market**
 
+**🔧 Database Usage (READY):**
+- **Database Files:** `src/database_models.py`, `src/database_manager.py`, `trading_project.db`
+- **Usage:** `from database_manager import DatabaseManager` -> `db = DatabaseManager()`
+- **Models:** HistoricalData with automatic validation + simulation targets
+- **Migrations:** Use `alembic upgrade head` for schema changes
+- **Bulk Insert:** `db.bulk_insert_historical_data(data_records)` for IB data
+- **Queries:** `db.get_historical_data(symbol='AAPL', trading_hours_only=True)`
+
 ---
 
 **נוצר:** 11/09/2025
 **עודכן אחרון:** 13/09/2025
-**גרסה:** 1.6 (Database Design Integration)
+**גרסה:** 1.7 (Database Implementation Complete)
