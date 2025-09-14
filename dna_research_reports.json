@@ -1,0 +1,804 @@
+[
+  {
+    "symbol": "MSTR",
+    "timeframe": "1min",
+    "analysis_date": "2025-09-14T14:26:41.209678",
+    "total_signals": 10,
+    "performance": {
+      "total_trades": 10,
+      "winning_trades": 1,
+      "losing_trades": 9,
+      "win_rate": "10.0%",
+      "total_pnl": "$-1100.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.13",
+      "avg_bars_held": "1.8"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-10T14:19:00",
+        "entry_price": "$463.20",
+        "exit_time": "2025-09-10T14:20:00",
+        "exit_price": "$460.40",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:35:00",
+        "entry_price": "$463.58",
+        "exit_time": "2025-09-10T14:39:00",
+        "exit_price": "$460.78",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 4,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:39:00",
+        "entry_price": "$463.17",
+        "exit_time": "2025-09-10T14:41:00",
+        "exit_price": "$466.37",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 2,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:43:00",
+        "entry_price": "$463.87",
+        "exit_time": "2025-09-10T14:44:00",
+        "exit_price": "$461.07",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T15:02:00",
+        "entry_price": "$463.75",
+        "exit_time": "2025-09-10T15:04:00",
+        "exit_price": "$460.95",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 2,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "MSTR",
+    "timeframe": "5min",
+    "analysis_date": "2025-09-14T14:26:41.234711",
+    "total_signals": 15,
+    "performance": {
+      "total_trades": 15,
+      "winning_trades": 3,
+      "losing_trades": 12,
+      "win_rate": "20.0%",
+      "total_pnl": "$-1200.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.29",
+      "avg_bars_held": "1.2"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-10T09:30:00",
+        "entry_price": "$461.78",
+        "exit_time": "2025-09-10T09:40:00",
+        "exit_price": "$464.98",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 2,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-10T09:35:00",
+        "entry_price": "$461.77",
+        "exit_time": "2025-09-10T09:40:00",
+        "exit_price": "$464.97",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 1,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-10T10:15:00",
+        "entry_price": "$462.35",
+        "exit_time": "2025-09-10T10:20:00",
+        "exit_price": "$459.55",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T11:20:00",
+        "entry_price": "$462.23",
+        "exit_time": "2025-09-10T11:25:00",
+        "exit_price": "$459.43",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T11:45:00",
+        "entry_price": "$462.68",
+        "exit_time": "2025-09-10T11:50:00",
+        "exit_price": "$459.88",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "MSTR",
+    "timeframe": "15min",
+    "analysis_date": "2025-09-14T14:26:41.246707",
+    "total_signals": 4,
+    "performance": {
+      "total_trades": 4,
+      "winning_trades": 1,
+      "losing_trades": 3,
+      "win_rate": "25.0%",
+      "total_pnl": "$-260.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.38",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-10T09:45:00",
+        "entry_price": "$462.64",
+        "exit_time": "2025-09-10T10:00:00",
+        "exit_price": "$459.84",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T13:15:00",
+        "entry_price": "$464.35",
+        "exit_time": "2025-09-10T13:30:00",
+        "exit_price": "$461.55",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:15:00",
+        "entry_price": "$462.30",
+        "exit_time": "2025-09-10T14:30:00",
+        "exit_price": "$465.50",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 1,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:45:00",
+        "entry_price": "$462.54",
+        "exit_time": "2025-09-10T15:00:00",
+        "exit_price": "$459.74",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "MSTR",
+    "timeframe": "1hour",
+    "analysis_date": "2025-09-14T14:26:41.266218",
+    "total_signals": 13,
+    "performance": {
+      "total_trades": 13,
+      "winning_trades": 4,
+      "losing_trades": 9,
+      "win_rate": "30.8%",
+      "total_pnl": "$-620.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.51",
+      "avg_bars_held": "1.1"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-04T09:30:00",
+        "entry_price": "$453.20",
+        "exit_time": "2025-09-04T10:30:00",
+        "exit_price": "$450.40",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-04T14:30:00",
+        "entry_price": "$452.19",
+        "exit_time": "2025-09-04T15:30:00",
+        "exit_price": "$449.39",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-05T09:30:00",
+        "entry_price": "$448.33",
+        "exit_time": "2025-09-05T10:30:00",
+        "exit_price": "$451.53",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 1,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-05T10:30:00",
+        "entry_price": "$450.32",
+        "exit_time": "2025-09-05T11:30:00",
+        "exit_price": "$447.52",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-05T16:30:00",
+        "entry_price": "$453.31",
+        "exit_time": "2025-09-08T09:30:00",
+        "exit_price": "$450.51",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "MSTR",
+    "timeframe": "4hour",
+    "analysis_date": "2025-09-14T14:26:41.276991",
+    "total_signals": 3,
+    "performance": {
+      "total_trades": 3,
+      "winning_trades": 0,
+      "losing_trades": 3,
+      "win_rate": "0.0%",
+      "total_pnl": "$-420.00",
+      "avg_win": "$0.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$0.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.00",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-04T09:30:00",
+        "entry_price": "$452.18",
+        "exit_time": "2025-09-04T13:30:00",
+        "exit_price": "$449.38",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-08T13:30:00",
+        "entry_price": "$458.70",
+        "exit_time": "2025-09-09T09:30:00",
+        "exit_price": "$455.90",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T09:30:00",
+        "entry_price": "$463.10",
+        "exit_time": "2025-09-10T13:30:00",
+        "exit_price": "$460.30",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "MSTR",
+    "timeframe": "daily",
+    "analysis_date": "2025-09-14T14:26:41.291071",
+    "total_signals": 5,
+    "performance": {
+      "total_trades": 5,
+      "winning_trades": 0,
+      "losing_trades": 5,
+      "win_rate": "0.0%",
+      "total_pnl": "$-700.00",
+      "avg_win": "$0.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$0.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.00",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-08-15T16:00:00",
+        "entry_price": "$437.45",
+        "exit_time": "2025-08-18T16:00:00",
+        "exit_price": "$434.65",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-08-20T16:00:00",
+        "entry_price": "$446.87",
+        "exit_time": "2025-08-21T16:00:00",
+        "exit_price": "$444.07",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-02T16:00:00",
+        "entry_price": "$458.30",
+        "exit_time": "2025-09-03T16:00:00",
+        "exit_price": "$455.50",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-03T16:00:00",
+        "entry_price": "$455.92",
+        "exit_time": "2025-09-04T16:00:00",
+        "exit_price": "$453.12",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-09T16:00:00",
+        "entry_price": "$462.00",
+        "exit_time": "2025-09-10T16:00:00",
+        "exit_price": "$459.20",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "NVDA",
+    "timeframe": "1min",
+    "analysis_date": "2025-09-14T14:26:41.313996",
+    "total_signals": 12,
+    "performance": {
+      "total_trades": 12,
+      "winning_trades": 0,
+      "losing_trades": 12,
+      "win_rate": "0.0%",
+      "total_pnl": "$-1680.00",
+      "avg_win": "$0.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$0.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.00",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-10T14:16:00",
+        "entry_price": "$810.20",
+        "exit_time": "2025-09-10T14:17:00",
+        "exit_price": "$807.40",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:34:00",
+        "entry_price": "$810.86",
+        "exit_time": "2025-09-10T14:35:00",
+        "exit_price": "$808.06",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:35:00",
+        "entry_price": "$809.73",
+        "exit_time": "2025-09-10T14:36:00",
+        "exit_price": "$806.93",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:50:00",
+        "entry_price": "$811.01",
+        "exit_time": "2025-09-10T14:51:00",
+        "exit_price": "$808.21",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T14:52:00",
+        "entry_price": "$811.27",
+        "exit_time": "2025-09-10T14:53:00",
+        "exit_price": "$808.47",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "NVDA",
+    "timeframe": "5min",
+    "analysis_date": "2025-09-14T14:26:41.340054",
+    "total_signals": 17,
+    "performance": {
+      "total_trades": 16,
+      "winning_trades": 0,
+      "losing_trades": 16,
+      "win_rate": "0.0%",
+      "total_pnl": "$-2240.00",
+      "avg_win": "$0.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$0.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.00",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-10T09:50:00",
+        "entry_price": "$799.97",
+        "exit_time": "2025-09-10T09:55:00",
+        "exit_price": "$797.17",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T10:00:00",
+        "entry_price": "$802.52",
+        "exit_time": "2025-09-10T10:05:00",
+        "exit_price": "$799.72",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T10:45:00",
+        "entry_price": "$804.46",
+        "exit_time": "2025-09-10T10:50:00",
+        "exit_price": "$801.66",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T11:10:00",
+        "entry_price": "$804.71",
+        "exit_time": "2025-09-10T11:15:00",
+        "exit_price": "$801.91",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T11:45:00",
+        "entry_price": "$804.63",
+        "exit_time": "2025-09-10T11:50:00",
+        "exit_price": "$801.83",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "NVDA",
+    "timeframe": "15min",
+    "analysis_date": "2025-09-14T14:26:41.347594",
+    "total_signals": 5,
+    "performance": {
+      "total_trades": 5,
+      "winning_trades": 1,
+      "losing_trades": 4,
+      "win_rate": "20.0%",
+      "total_pnl": "$-400.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.29",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-10T10:30:00",
+        "entry_price": "$800.03",
+        "exit_time": "2025-09-10T10:45:00",
+        "exit_price": "$797.23",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T12:30:00",
+        "entry_price": "$809.00",
+        "exit_time": "2025-09-10T12:45:00",
+        "exit_price": "$806.20",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T12:45:00",
+        "entry_price": "$805.52",
+        "exit_time": "2025-09-10T13:00:00",
+        "exit_price": "$802.72",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T13:45:00",
+        "entry_price": "$810.78",
+        "exit_time": "2025-09-10T14:00:00",
+        "exit_price": "$807.98",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-10T15:30:00",
+        "entry_price": "$809.63",
+        "exit_time": "2025-09-10T15:45:00",
+        "exit_price": "$812.83",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 1,
+        "exit_reason": "Take Profit Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "NVDA",
+    "timeframe": "1hour",
+    "analysis_date": "2025-09-14T14:26:41.364309",
+    "total_signals": 10,
+    "performance": {
+      "total_trades": 10,
+      "winning_trades": 2,
+      "losing_trades": 8,
+      "win_rate": "20.0%",
+      "total_pnl": "$-800.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.29",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-04T11:30:00",
+        "entry_price": "$798.08",
+        "exit_time": "2025-09-04T12:30:00",
+        "exit_price": "$801.28",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 1,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-04T12:30:00",
+        "entry_price": "$799.22",
+        "exit_time": "2025-09-04T13:30:00",
+        "exit_price": "$796.42",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-04T13:30:00",
+        "entry_price": "$798.52",
+        "exit_time": "2025-09-04T14:30:00",
+        "exit_price": "$795.72",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-04T14:30:00",
+        "entry_price": "$797.62",
+        "exit_time": "2025-09-04T15:30:00",
+        "exit_price": "$794.82",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-04T16:30:00",
+        "entry_price": "$790.19",
+        "exit_time": "2025-09-05T09:30:00",
+        "exit_price": "$787.39",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "NVDA",
+    "timeframe": "4hour",
+    "analysis_date": "2025-09-14T14:26:41.375470",
+    "total_signals": 3,
+    "performance": {
+      "total_trades": 3,
+      "winning_trades": 1,
+      "losing_trades": 2,
+      "win_rate": "33.3%",
+      "total_pnl": "$-120.00",
+      "avg_win": "$160.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$160.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.57",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-09-05T09:30:00",
+        "entry_price": "$781.47",
+        "exit_time": "2025-09-05T13:30:00",
+        "exit_price": "$784.67",
+        "pnl": "$160.00",
+        "result": "WIN",
+        "bars_held": 1,
+        "exit_reason": "Take Profit Hit"
+      },
+      {
+        "entry_time": "2025-09-05T13:30:00",
+        "entry_price": "$803.92",
+        "exit_time": "2025-09-08T09:30:00",
+        "exit_price": "$801.12",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-09-09T09:30:00",
+        "entry_price": "$821.85",
+        "exit_time": "2025-09-09T13:30:00",
+        "exit_price": "$819.05",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  },
+  {
+    "symbol": "NVDA",
+    "timeframe": "daily",
+    "analysis_date": "2025-09-14T14:26:41.390261",
+    "total_signals": 10,
+    "performance": {
+      "total_trades": 9,
+      "winning_trades": 0,
+      "losing_trades": 9,
+      "win_rate": "0.0%",
+      "total_pnl": "$-1260.00",
+      "avg_win": "$0.00",
+      "avg_loss": "$-140.00",
+      "largest_win": "$0.00",
+      "largest_loss": "$-140.00",
+      "profit_factor": "0.00",
+      "avg_bars_held": "1.0"
+    },
+    "sample_trades": [
+      {
+        "entry_time": "2025-08-15T16:00:00",
+        "entry_price": "$825.65",
+        "exit_time": "2025-08-18T16:00:00",
+        "exit_price": "$822.85",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-08-18T16:00:00",
+        "entry_price": "$850.30",
+        "exit_time": "2025-08-19T16:00:00",
+        "exit_price": "$847.50",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-08-20T16:00:00",
+        "entry_price": "$850.50",
+        "exit_time": "2025-08-21T16:00:00",
+        "exit_price": "$847.70",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-08-21T16:00:00",
+        "entry_price": "$854.58",
+        "exit_time": "2025-08-22T16:00:00",
+        "exit_price": "$851.78",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      },
+      {
+        "entry_time": "2025-08-25T16:00:00",
+        "entry_price": "$852.29",
+        "exit_time": "2025-08-26T16:00:00",
+        "exit_price": "$849.49",
+        "pnl": "$-140.00",
+        "result": "LOSS",
+        "bars_held": 1,
+        "exit_reason": "Stop Loss Hit"
+      }
+    ]
+  }
+]

@@ -1,0 +1,171 @@
+{
+  "validation_summary": {
+    "timestamp": "2025-09-14T14:39:51.263377",
+    "total_tests": 6,
+    "passed": 6,
+    "failed": 0,
+    "warnings": 0,
+    "success_rate": "100.0%"
+  },
+  "system_statistics": {
+    "database_records": 590,
+    "indicator_templates": 5,
+    "dna_entry_signals": 107,
+    "symbols_tested": [
+      "MSTR",
+      "NVDA"
+    ],
+    "timeframes_active": 6,
+    "api_endpoints": 6
+  },
+  "detailed_results": [
+    {
+      "test_name": "Database Connectivity",
+      "status": "PASS",
+      "duration_seconds": 0.018,
+      "timestamp": "2025-09-14T14:38:57.750980",
+      "details": {
+        "total_records": 590,
+        "mstr_records": 295,
+        "indexed_query_time": "0.001s"
+      }
+    },
+    {
+      "test_name": "Data Integrity",
+      "status": "PASS",
+      "duration_seconds": 0.015,
+      "timestamp": "2025-09-14T14:38:57.765627",
+      "details": {
+        "timeframe_distribution": {
+          "1min": 240,
+          "5min": 156,
+          "15min": 52,
+          "1hour": 80,
+          "4hour": 20,
+          "daily": 42
+        }
+      }
+    },
+    {
+      "test_name": "API Endpoints",
+      "status": "PASS",
+      "duration_seconds": 12.287,
+      "timestamp": "2025-09-14T14:39:10.052652",
+      "details": {
+        "endpoints": {
+          "/docs": {
+            "status": "PASS",
+            "response_time": "2.033s",
+            "content_length": 940
+          },
+          "/data/MSTR/1min": {
+            "status": "PASS",
+            "response_time": "2.071s",
+            "content_length": 37442
+          },
+          "/data/NVDA/daily?trading_hours_only=false": {
+            "status": "PASS",
+            "response_time": "2.057s",
+            "content_length": 6872
+          },
+          "/indicators/available": {
+            "status": "PASS",
+            "response_time": "2.035s",
+            "content_length": 1130
+          },
+          "/analysis/dna/MSTR": {
+            "status": "PASS",
+            "response_time": "2.047s",
+            "content_length": 1131
+          },
+          "/statistics/performance": {
+            "status": "PASS",
+            "response_time": "2.043s",
+            "content_length": 292
+          }
+        }
+      }
+    },
+    {
+      "test_name": "Query Performance",
+      "status": "PASS",
+      "duration_seconds": 0.014,
+      "timestamp": "2025-09-14T14:39:10.066893",
+      "details": {
+        "tests": [
+          {
+            "test": "Symbol Filter (1000 records)",
+            "duration": "0.008s",
+            "records": 295,
+            "status": "PASS"
+          },
+          {
+            "test": "Multi-Filter with DNA Signals",
+            "duration": "0.003s",
+            "records": 17,
+            "status": "PASS"
+          },
+          {
+            "test": "Aggregation Query",
+            "duration": "0.003s",
+            "result": "Count: 295, Avg Vol: 217390, Total PnL: $-4300.0",
+            "status": "PASS"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "DNA Simulation Accuracy",
+      "status": "PASS",
+      "duration_seconds": 0.002,
+      "timestamp": "2025-09-14T14:39:10.068970",
+      "details": {
+        "total_trades_tested": 10,
+        "calculation_errors": 0,
+        "sample_validations": [
+          {
+            "timestamp": "2025-08-15T16:00:00",
+            "entry_price": "$437.450000",
+            "exit_price": "$434.650000",
+            "expected_pnl": "$-140.00",
+            "actual_pnl": "$-140.00",
+            "pnl_match": true,
+            "sl_correct": true,
+            "tp_correct": true
+          },
+          {
+            "timestamp": "2025-08-20T16:00:00",
+            "entry_price": "$446.870000",
+            "exit_price": "$444.070000",
+            "expected_pnl": "$-140.00",
+            "actual_pnl": "$-140.00",
+            "pnl_match": true,
+            "sl_correct": true,
+            "tp_correct": true
+          },
+          {
+            "timestamp": "2025-09-02T16:00:00",
+            "entry_price": "$458.300000",
+            "exit_price": "$455.500000",
+            "expected_pnl": "$-140.00",
+            "actual_pnl": "$-140.00",
+            "pnl_match": true,
+            "sl_correct": true,
+            "tp_correct": true
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "System Stress Test",
+      "status": "PASS",
+      "duration_seconds": 41.179,
+      "timestamp": "2025-09-14T14:39:51.247649",
+      "details": {
+        "successful_api_calls": "20/20",
+        "average_db_query_time": "0.000s",
+        "max_db_query_time": "0.000s"
+      }
+    }
+  ]
+}
