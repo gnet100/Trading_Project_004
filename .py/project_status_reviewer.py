@@ -224,15 +224,124 @@ class ProjectStatusReviewer:
         except Exception as e:
             return {"error": f"Failed to parse SESSION_ARCHIVE.md: {str(e)}"}
 
+    def scan_python_files(self):
+        """Scan src/ directory for Python files and their status"""
+        src_path = self.base_path / "src"
+        python_files = {}
+
+        if src_path.exists():
+            for py_file in src_path.glob("*.py"):
+                if py_file.name != "__init__.py":  # Skip __init__.py
+                    stat = py_file.stat()
+                    python_files[py_file.name] = {
+                        'exists': True,
+                        'size': stat.st_size,
+                        'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M')
+                    }
+
+        return python_files
+
+    def analyze_task_completion(self, tasks_content, python_files):
+        """Analyze which tasks should be marked as completed based on existing files"""
+        updates_made = []
+
+        # Define file-to-task mappings
+        file_mappings = {
+            'database_models.py': ['Database Models', 'HistoricalData model'],
+            'database_manager.py': ['Database Manager', 'Connection management'],
+            'ib_connector.py': ['IB Connection', 'Connection manager'],
+            'data_storage_service.py': ['Data Storage Service', 'Storage API'],
+            'ib_connection_tester.py': ['Connection Testing', 'IB Connection Test'],
+            'historical_data_downloader.py': ['Historical Data Download', 'Data Download'],
+            'multi_timeframe_validator.py': ['Enterprise Data Validation', 'Multi-Timeframe'],
+            'rate_limiter.py': ['Rate Limiting', 'IB API rate'],
+            'batch_optimizer.py': ['Batch Optimization', 'batch requests'],
+            'performance_tester.py': ['Performance Testing', 'performance testing'],
+            'config_manager.py': ['Configuration Management', 'config'],
+            'config_validator.py': ['Configuration', 'validation']
+        }
+
+        # Keywords for task completion detection
+        completion_keywords = ['יצירת', 'עדכון', 'התקנת', 'בדיקת', 'הקמת', 'פיתוח']
+
+        # Look for tasks that should be completed
+        lines = tasks_content.split('\n')
+        updated_lines = []
+
+        for line in lines:
+            updated_line = line
+            # Check if this is a pending task line
+            if '- ⏳' in line or '- 🔄' in line:
+                task_text = line.lower()
+                should_complete = False
+
+                # Check file-based completion
+                for filename, keywords in file_mappings.items():
+                    if filename in python_files and python_files[filename]['exists']:
+                        for keyword in keywords:
+                            if keyword.lower() in task_text:
+                                should_complete = True
+                                updates_made.append(f"Found {filename} → completing task: {keyword}")
+                                break
+                    if should_complete:
+                        break
+
+                # Update the line if task should be completed
+                if should_complete:
+                    if '- ⏳' in line:
+                        updated_line = line.replace('- ⏳', '- ✅')
+                    elif '- 🔄' in line:
+                        updated_line = line.replace('- 🔄', '- ✅')
+
+            updated_lines.append(updated_line)
+
+        return '\n'.join(updated_lines), updates_made
+
+    def update_tasks_file(self, updated_content):
+        """Write updated TASKS.md back to file"""
+        try:
+            tasks_file = self.md_path / "TASKS.md"
+            with open(tasks_file, 'w', encoding='utf-8') as f:
+                f.write(updated_content)
+            return True
+        except Exception as e:
+            self.safe_print(f"❌ Error updating TASKS.md: {str(e)}")
+            return False
+
     def analyze_project(self):
-        """Main analysis function"""
+        """Main analysis function with enhanced file scanning"""
         self.safe_print("🔍 Reading project documentation files...")
 
-        # Read all files
+        # Read all files - ACTUAL CONTENT READING
         for filename in self.files_to_read:
             self.safe_print(f"   📄 Reading {filename}...")
             content = self.read_file_safe(filename)
             self.status_data[filename] = content
+
+        self.safe_print("\n📊 Scanning Python files in src/...")
+        python_files = self.scan_python_files()
+        self.safe_print(f"   Found {len(python_files)} Python files")
+
+        self.safe_print("\n🔄 Analyzing task completion status...")
+        if "TASKS.md" in self.status_data:
+            updated_tasks_content, updates_made = self.analyze_task_completion(
+                self.status_data["TASKS.md"], python_files
+            )
+
+            if updates_made:
+                self.safe_print(f"   ✅ Found {len(updates_made)} tasks to update automatically")
+                for update in updates_made[:3]:  # Show first 3
+                    self.safe_print(f"      • {update}")
+
+                # Update the TASKS.md file
+                if self.update_tasks_file(updated_tasks_content):
+                    self.safe_print("   💾 TASKS.md updated successfully")
+                    # Update our internal copy
+                    self.status_data["TASKS.md"] = updated_tasks_content
+                else:
+                    self.safe_print("   ❌ Failed to update TASKS.md")
+            else:
+                self.safe_print("   ℹ️ No automatic task updates needed")
 
         self.safe_print("\n📊 Analyzing project status...")
 
@@ -252,9 +361,9 @@ class ProjectStatusReviewer:
             self.status_data.get("SESSION_ARCHIVE.md", "")
         )
 
-        return current_status, task_status, session_info
+        return current_status, task_status, session_info, python_files
 
-    def generate_summary(self, current_status, task_status, session_info):
+    def generate_summary(self, current_status, task_status, session_info, python_files=None):
         """Generate final summary with RULES enforcement reminder"""
         summary = []
         summary.append("=" * 60)
@@ -323,15 +432,26 @@ class ProjectStatusReviewer:
             summary.append(f"     • {rule}")
         summary.append("")
 
-        # Technical Status (NEW)
+        # Technical Status (ENHANCED)
         summary.append("🔧 TECHNICAL STATUS:")
         summary.append(f"   Environment: {self.technical_status.get('environment', 'Unknown')}")
         summary.append(f"   Database: {self.technical_status.get('database_choice', 'Not specified')}")
         summary.append(f"   Validation: {self.technical_status.get('validation_quality', 'Unknown')}")
-        summary.append(f"   Python Files: {len(self.technical_status.get('python_files', []))} files in src/")
-        if self.technical_status.get('python_files'):
-            top_files = self.technical_status['python_files'][:5]  # Show first 5
-            summary.append(f"     Key files: {', '.join(top_files)}")
+
+        # Python Files Status (NEW)
+        if python_files:
+            summary.append(f"   Python Files: {len(python_files)} files in src/")
+            summary.append("     Recent files:")
+            # Sort by modification time and show top 5
+            sorted_files = sorted(python_files.items(), key=lambda x: x[1]['modified'], reverse=True)
+            for filename, info in sorted_files[:5]:
+                size_kb = info['size'] // 1024 if info['size'] > 0 else 0
+                summary.append(f"       • {filename} ({size_kb}KB, modified: {info['modified']})")
+        else:
+            summary.append(f"   Python Files: {len(self.technical_status.get('python_files', []))} files in src/")
+            if self.technical_status.get('python_files'):
+                top_files = self.technical_status['python_files'][:5]  # Show first 5
+                summary.append(f"     Key files: {', '.join(top_files)}")
         summary.append("")
 
         # Architectural Decisions (NEW)
@@ -384,11 +504,11 @@ def main():
         reviewer.safe_print("🚀 Trading Project 004 - Status Reviewer")
         reviewer.safe_print("=" * 50)
 
-        # Analyze project
-        current_status, task_status, session_info = reviewer.analyze_project()
+        # Analyze project with enhanced scanning
+        current_status, task_status, session_info, python_files = reviewer.analyze_project()
 
         # Generate and display summary
-        summary = reviewer.generate_summary(current_status, task_status, session_info)
+        summary = reviewer.generate_summary(current_status, task_status, session_info, python_files)
         reviewer.safe_print(summary)
 
         # Optionally save to file
@@ -397,6 +517,26 @@ def main():
             f.write(summary)
 
         reviewer.safe_print(f"\n💾 Full summary saved to: {output_file}")
+
+        # Add Claude reading instructions
+        reviewer.safe_print("\n" + "=" * 60)
+        reviewer.safe_print("📋 CLAUDE: Please read these files for complete project context:")
+        reviewer.safe_print("=" * 60)
+        files_to_read = [
+            "RULES.md",
+            "PRD.md",
+            "PLANNING.md",
+            "DATABASE_DESIGN.md",
+            "CURRENT_STATUS.md",
+            "TASKS.md",
+            "GENERATED_STATUS_SUMMARY.md"
+        ]
+
+        for file in files_to_read:
+            reviewer.safe_print(f"   📄 Read: {file}")
+
+        reviewer.safe_print("\n💡 After reading these files, you'll have complete project understanding!")
+        reviewer.safe_print("=" * 60)
 
     except Exception as e:
         reviewer = ProjectStatusReviewer()

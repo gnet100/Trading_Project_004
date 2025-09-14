@@ -14,7 +14,8 @@
       "Bash(git push:*)",
       "Bash(git pull:*)",
       "Bash(git commit:*)",
-      "Bash(\"C:\\Users\\Golan\\miniconda3\\envs\\trading_project\\python.exe\" -c \"\nimport sys\nsys.path.append(''C:/Users/Golan/Claude-Code/Trading Project/Trading Project 004/.py'')\nfrom auto_project_updater import AutoProjectUpdater\nprint(''✅ Syntax check passed'')\n\")"
+      "Bash(\"C:\\Users\\Golan\\miniconda3\\envs\\trading_project\\python.exe\" -c \"\nimport sys\nsys.path.append(''C:/Users/Golan/Claude-Code/Trading Project/Trading Project 004/.py'')\nfrom auto_project_updater import AutoProjectUpdater\nprint(''✅ Syntax check passed'')\n\")",
+      "Bash(git -C \"C:\\Users\\Golan\\Claude-Code\\Trading Project\\Trading Project 004\" checkout HEAD -- .py/auto_project_updater.py)"
     ],
     "deny": [],
     "ask": []

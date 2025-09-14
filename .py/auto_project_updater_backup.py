@@ -25,7 +25,7 @@ import re
 import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import List, Dict
+from typing import List
 
 # Import GitHub Backup Manager
 sys.path.append(str(Path(__file__).parent.parent / "src"))
@@ -96,6 +96,42 @@ class AutoProjectUpdater:
         except Exception as e:
             self.safe_print(f"❌ Error writing {filepath}: {e}")
             return False
+
+    def analyze_git_commits(self) -> List[str]:
+        """ניתוח commit messages לזיהוי פעילויות"""
+        activities = []
+        try:
+            import subprocess
+            import os
+
+            # Change to project directory
+            original_dir = os.getcwd()
+            os.chdir(self.base_path)
+
+            # Get last 5 commits from today
+            today_str = date.today().strftime("%Y-%m-%d")
+            result = subprocess.run([
+                'git', 'log', '--oneline', '--since', today_str, '-n', '5'
+            ], capture_output=True, text=True, check=True)
+
+            if result.stdout.strip():
+                commits = result.stdout.strip().split('\n')
+                for commit in commits:
+                    if commit.strip():
+                        # Extract meaningful info from commit message
+                        commit_msg = commit.split(' ', 1)[1] if ' ' in commit else commit
+                        if any(keyword in commit_msg.lower() for keyword in
+                               ['add', 'create', 'update', 'fix', 'enhance', 'implement']):
+                            activities.append(f"Git: {commit_msg[:60]}")
+
+            os.chdir(original_dir)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # Git not available or no commits today
+            pass
+        except Exception:
+            pass
+
+        return activities[:3]  # Limit to 3 most recent
 
     def analyze_git_commits(self) -> List[str]:
         """ניתוח commit messages לזיהוי פעילויות"""
@@ -230,9 +266,56 @@ class AutoProjectUpdater:
                     pass
 
         return file_analysis
+                                classes = re.findall(r'class\s+(\w+)', content)
+                                indicators.extend([f"class {cls}" for cls in classes[:3]])
+                            if 'def' in content.lower():
+                                functions = re.findall(r'def\s+(\w+)', content)
+                                main_functions = [f for f in functions if not f.startswith('_')][:3]
+                                indicators.extend([f"function {func}" for func in main_functions])
+
+                            file_analysis[py_file.name] = indicators
+                except OSError:
+                    pass
+
+        return file_analysis
+
+    def dynamic_task_matching(self, tasks_content: str) -> List[tuple]:
+        """התאמה דינמית של פעילויות למשימות פתוחות"""
+        matches = []
+
+        # Find all pending tasks
+        pending_pattern = r"- ⏳ ([🔥🟡🟢]) (.+)"
+        pending_tasks = re.findall(pending_pattern, tasks_content)
+
+        # Combine all session activities
+        all_activities = self.session_activities + [
+            f"קובץ: {filename}" for filename in self.analyze_file_contents_for_tasks().keys()
+        ]
+
+        # For each pending task, calculate match score
+        for priority, task_text in pending_tasks:
+            best_score = 0
+            best_activity = None
+
+            # Create keywords from task
+            task_keywords = self.extract_keywords(task_text)
+
+            # Check against all activities
+            for activity in all_activities:
+                score = self.calculate_match_score(task_keywords, activity)
+                if score > best_score:
+                    best_score = score
+                    best_activity = activity
+
+            # If score is high enough, consider it a match
+            if best_score >= 75:  # 75% threshold
+                matches.append((priority, task_text, best_activity, best_score))
+
+        return matches
 
     def extract_keywords(self, text: str) -> List[str]:
         """חילוץ מילות מפתח מטקסט משימה"""
+        # Hebrew and English keywords that indicate task types
         keywords = []
         text_lower = text.lower()
 
@@ -271,40 +354,6 @@ class AutoProjectUpdater:
         score = int((matches / len(task_keywords)) * 100)
         return score
 
-    def dynamic_task_matching(self, tasks_content: str) -> List[tuple]:
-        """התאמה דינמית של פעילויות למשימות פתוחות"""
-        matches = []
-
-        # Find all pending tasks
-        pending_pattern = r"- ⏳ ([🔥🟡🟢]) (.+)"
-        pending_tasks = re.findall(pending_pattern, tasks_content)
-
-        # Combine all session activities
-        all_activities = self.session_activities + [
-            f"קובץ: {filename}" for filename in self.analyze_file_contents_for_tasks().keys()
-        ]
-
-        # For each pending task, calculate match score
-        for priority, task_text in pending_tasks:
-            best_score = 0
-            best_activity = None
-
-            # Create keywords from task
-            task_keywords = self.extract_keywords(task_text)
-
-            # Check against all activities
-            for activity in all_activities:
-                score = self.calculate_match_score(task_keywords, activity)
-                if score > best_score:
-                    best_score = score
-                    best_activity = activity
-
-            # If score is high enough, consider it a match
-            if best_score >= 75:  # 75% threshold
-                matches.append((priority, task_text, best_activity, best_score))
-
-        return matches
-
     def auto_mark_completed_tasks(self) -> bool:
         """Automatically mark tasks as completed - ENHANCED VERSION"""
         self.safe_print("📋 זיהוי אוטומטי מתקדם של משימות שהושלמו...")
@@ -313,14 +362,14 @@ class AutoProjectUpdater:
         if not tasks_content:
             return False
 
-        # Phase 1: Static mapping (existing logic)
+        # Phase 1: Static mapping (existing logic, but enhanced)
         static_matches = self._static_task_mapping(tasks_content)
 
         # Phase 2: Dynamic matching (NEW)
         dynamic_matches = self.dynamic_task_matching(tasks_content)
 
         # Combine all matches
-        all_matches = static_matches + dynamic_matches
+        all_matches = static_matches + [(p, t, None, 100) for p, t in dynamic_matches if (p, t, None, 100) not in static_matches]
 
         updated_content = tasks_content
         tasks_completed = 0
@@ -384,107 +433,6 @@ class AutoProjectUpdater:
                 matches.append((priority, full_task, f"static:{indicator}", 100))
 
         return matches
-
-    def dynamic_content_update(self) -> bool:
-        """עדכון דינמי של תוכן קבצים לפי שינויים"""
-        self.safe_print("🔄 עדכון תוכן דינמי של קבצי תיעוד...")
-
-        updates_made = 0
-
-        # Update CLAUDE.md with new Python files
-        if self._update_claude_md_dynamically():
-            updates_made += 1
-
-        # Update CURRENT_STATUS.md with latest activities
-        if self._update_current_status_dynamically():
-            updates_made += 1
-
-        if updates_made > 0:
-            self.changes_made.append(f"עודכנו {updates_made} קבצי תיעוד דינמית")
-
-        return True
-
-    def _update_claude_md_dynamically(self) -> bool:
-        """עדכון דינמי של CLAUDE.md"""
-        try:
-            claude_content = self.read_file_safe(self.files["claude"])
-            if not claude_content:
-                return False
-
-            # Check if new Python files were added today
-            new_files = []
-            src_dir = self.base_path / "src"
-            if src_dir.exists():
-                today = date.today()
-                for py_file in src_dir.glob("*.py"):
-                    try:
-                        mod_time = datetime.fromtimestamp(py_file.stat().st_mtime).date()
-                        if mod_time == today:
-                            new_files.append(py_file.name)
-                    except OSError:
-                        pass
-
-            if new_files:
-                # Update the version number
-                claude_content = re.sub(
-                    r'\*\*גרסה:\*\* (\d+)\.(\d+)',
-                    lambda m: f"**גרסה:** {m.group(1)}.{int(m.group(2)) + 1}",
-                    claude_content
-                )
-
-                # Update last updated date
-                today_str = date.today().strftime("%d/%m/%Y")
-                claude_content = re.sub(
-                    r'\*\*עודכן אחרון:\*\* \d{2}/\d{2}/\d{4}',
-                    f"**עודכן אחרון:** {today_str}",
-                    claude_content
-                )
-
-                if self.write_file_safe(self.files["claude"], claude_content):
-                    self.safe_print(f"  ✅ עודכן CLAUDE.md עם {len(new_files)} קבצים חדשים")
-                    return True
-
-        except Exception as e:
-            self.safe_print(f"  ❌ שגיאה בעדכון CLAUDE.md: {e}")
-
-        return False
-
-    def _update_current_status_dynamically(self) -> bool:
-        """עדכון דינמי של CURRENT_STATUS.md"""
-        try:
-            current_status = self.read_file_safe(self.files["current_status"])
-            if not current_status:
-                return False
-
-            # Update "New Files Created" section if there are new Python files
-            file_analysis = self.analyze_file_contents_for_tasks()
-            if file_analysis:
-                today_str = date.today().strftime("%d/%m/%Y")
-                new_files_text = f"**New Files Created:** {', '.join(file_analysis.keys())} ({today_str})"
-
-                # Try to update existing "New Files Created" line or add it
-                if "**New Files Created:**" in current_status:
-                    current_status = re.sub(
-                        r'\*\*New Files Created:\*\* .+',
-                        new_files_text,
-                        current_status
-                    )
-                else:
-                    # Add after "Just Completed" line
-                    current_status = re.sub(
-                        r'(\*\*Just Completed:\*\* .+\n)',
-                        r'\1' + new_files_text + '\n',
-                        current_status
-                    )
-
-                if self.write_file_safe(self.files["current_status"], current_status):
-                    self.safe_print(f"  ✅ עודכן CURRENT_STATUS.md עם קבצים חדשים")
-                    return True
-
-        except Exception as e:
-            self.safe_print(f"  ❌ שגיאה בעדכון CURRENT_STATUS.md: {e}")
-
-        return False
 
     def update_current_status_auto(self) -> bool:
         """Automatically update CURRENT_STATUS.md"""
@@ -779,7 +727,6 @@ def main():
         steps = [
             ("זיהוי פעילויות סשן", lambda: updater.detect_session_activities()),
             ("עדכון משימות שהושלמו", updater.auto_mark_completed_tasks),
-            ("עדכון דינמי של תוכן קבצים", updater.dynamic_content_update),
             ("עדכון סטטיסטיקות משימות", updater.update_task_statistics),
             ("עדכון מצב נוכחי", updater.update_current_status_auto),
             ("יצירת וארכוב סיכום סשן", updater.create_auto_session_summary),
