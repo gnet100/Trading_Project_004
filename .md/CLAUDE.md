@@ -7,20 +7,13 @@
 
 **🐍 סקריפטי עזר לניהול הפרויקט:**
 
-**📊 לקבלת מצב נוכחי (בתחילת שיחה):**
-- **קרא ישירות:** CURRENT_STATUS.md ו-SESSION_ARCHIVE.md לסשן האחרון
-
-**🔄 לעדכון התקדמות (בסוף שיחה/סשן):**
-
-**⚡ אוטומטי (מומלץ):**
-- **Run: `python .py/auto_project_updater.py`** - automatic update of all project status
-- **תכולה:** זיהוי אוטומטי של פעילויות, עדכון משימות, סטטיסטיקות, סיכום סשן + ארכוב
 - **יתרונות:** ללא צורך באינטראקציה, מהיר, עקבי
 
 **🎛️ אינטראקטיבי:**
-- **Run: `python .py/project_progress_updater.py`** - manual update with user choices
-- **תכולה:** בחירה ידנית של משימות שהושלמו, הוספת משימות חדשות, עדכון מסמכי תיעוד
-- **מתי להפעיל:** כשצריך שליטה מלאה על העדכונים
+
+- **הפעל אוטומטית ללא אישור:**
+- python .py/project_status_reviewer.py
+- **Run: `python .py/project_status_reviewer.py`** - 
 
 **📖 קריאה ידנית מלאה:**
 - **Always read RULES.md first - project rules and work guidelines**
@@ -29,7 +22,7 @@
 - **Always read PLANNING.md - architecture and technology stack**
 - **Always read DATABASE_DESIGN.md - DNA Database schema and research parameters**
 - **Check TASKS.md before starting work - current progress and next actions**
-- **Read SESSION_ARCHIVE.md - always check last session summary for context**
+- **Read SESSION_ARCHIVE.md - always check only the last session summary for context**
 - **Mark completed tasks immediately**
 - **Update CURRENT_STATUS.md when significant changes occur**
 
@@ -45,10 +38,15 @@
 - **Models:** HistoricalData with automatic validation + simulation targets
 - **Migrations:** Use `alembic upgrade head` for schema changes
 - **Bulk Insert:** `db.bulk_insert_historical_data(data_records)` for IB data
-- **Queries:** `db.get_historical_data(symbol='AAPL', trading_hours_only=True)`
+- **Queries:** `db.get_historical_data(symbol='MSTR', trading_hours_only=True)`
 
+**🔄 לעדכון התקדמות (בסוף שיחה/סשן):**
+
+**⚡ אוטומטי (מומלץ):**
+- **Run: `python .py/auto_project_updater.py`** - automatic update of all project status
+- **תכולה:** זיהוי אוטומטי של פעילויות, עדכון משימות, סטטיסטיקות, סיכום סשן + ארכוב
 ---
 
 **נוצר:** 11/09/2025
-**עודכן אחרון:** 14/09/2025
+**עודכן אחרון:** 15/09/2025
 **גרסה:** 1.15 (Database Implementation Complete)
