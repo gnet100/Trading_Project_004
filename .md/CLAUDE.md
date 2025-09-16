@@ -48,5 +48,5 @@
 ---
 
 **נוצר:** 11/09/2025
-**עודכן אחרון:** 15/09/2025
-**גרסה:** 1.17 (Database Implementation Complete)
+**עודכן אחרון:** 16/09/2025
+**גרסה:** 1.18 (Database Implementation Complete)
