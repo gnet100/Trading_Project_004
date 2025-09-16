@@ -252,4 +252,4 @@ CREATE TABLE historical_data (
 **גרסה:** 1.3
 **סטטוס:** מתעדכן - נוסף IB Connection Enhancement (14/09/2025)
 **מעודכן אחרון:** 14/09/2025
-**עדכון אחרון:** שיפור אמינות חיבור IB עם TWS-API patterns, מסגרת בדיקות מקיפה
+**עדכון אחרון:** השלמת Pattern Recognition עם 35+ דפוסים, Statistical Significance Testing ו-Historical Success Analysis
