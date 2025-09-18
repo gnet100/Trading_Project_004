@@ -42,6 +42,7 @@ Output an overview of every single dimension of my request. Find points of uncer
 
 ### Python
 - השתמש בencoding='utf-8' תמיד
+- בקבצי קוד .py השתדל להימנע לחלוטין משימוש באייקונים. הם גורמים לטעויות הרבה פעמים.
 - הוסף try/except לפעולות קריטיות
 - השתמש בpathlib.Path במקום os.path
 
