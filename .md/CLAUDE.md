@@ -21,6 +21,7 @@
 - **Always read PRD.md - complete product specification**
 - **Always read PLANNING.md - architecture and technology stack**
 - **Always read DATABASE_DESIGN.md - DNA Database schema and research parameters**
+- **Always read THE_THEORY.md - The theory that leads the project**
 - **Check TASKS.md before starting work - current progress and next actions**
 - **Read SESSION_ARCHIVE.md - always check only the last session summary for context**
 - **Mark completed tasks immediately**
@@ -48,5 +49,5 @@
 ---
 
 **נוצר:** 11/09/2025
-**עודכן אחרון:** 16/09/2025
-**גרסה:** 1.19 (Database Implementation Complete)
+**עודכן אחרון:** 18/09/2025
+**גרסה:** 1.20 (Database Implementation Complete)
